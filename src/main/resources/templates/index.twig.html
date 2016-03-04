@@ -2,10 +2,10 @@
 <html>
 <head>
     <meta charset="utf-8"/>
-    <title>插件</title>
-    <link href="assets/css/bootstrap.min.css" rel="stylesheet"/>
-    <link rel="stylesheet" href="assets/css/font-awesome.min.css"/>
+    <title>{{_plugin.name}} - V{{_plugin.version}}</title>
 
+    <link rel="stylesheet" href="assets/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="assets/css/font-awesome.min.css"/>
     <link rel="stylesheet" href="assets/css/ace.min.css"/>
     <link rel="stylesheet" href="assets/css/ace-rtl.min.css"/>
     <link rel="stylesheet" href="assets/css/ace-skins.min.css"/>
@@ -18,7 +18,6 @@
     <script src="assets/js/ace.min.js"></script>
     <script src="assets/js/ace-extra.min.js"></script>
 
-    <link rel="stylesheet" href="assets/css/jquery.gritter.css"/>
     <script src="assets/js/jquery.gritter.min.js"></script>
     <script src="assets/js/bootbox.min.js"></script>
     <script src="js/set_update.js"></script>
@@ -30,6 +29,7 @@
                 })
             })
         });
+
     </script>
 </head>
 <body>
@@ -49,21 +49,24 @@
             <label class="col-sm-3 control-label no-padding-right" for="form-field-1"> SMTP服务器 </label>
 
             <div class="col-sm-9">
-                <input type="text" id="form-field-1" class="col-xs-10 col-sm-5" value="{{smtpServer}}" name="smtpServer">
+                <input type="text" id="form-field-1" class="col-xs-10 col-sm-5" value="{{smtpServer}}"
+                       name="smtpServer">
             </div>
         </div>
         <div class="form-group">
             <label class="col-sm-3 control-label no-padding-right" for="form-field-1"> 密码 </label>
 
             <div class="col-sm-9">
-                <input type="password" id="form-field-1" class="col-xs-10 col-sm-5" value="{{password}}" name="password">
+                <input type="password" id="form-field-1" class="col-xs-10 col-sm-5" value="{{password}}"
+                       name="password">
             </div>
         </div>
         <div class="form-group">
             <label class="col-sm-3 control-label no-padding-right" for="form-field-1"> 端口 </label>
 
             <div class="col-sm-9">
-                <input type="text" id="form-field-1" class="col-xs-10 col-sm-5" value="{{port}}" name="port" maxlength="5">
+                <input type="text" id="form-field-1" class="col-xs-10 col-sm-5" value="{{port}}" name="port"
+                       maxlength="5">
             </div>
         </div>
         <div class="space-4"></div>

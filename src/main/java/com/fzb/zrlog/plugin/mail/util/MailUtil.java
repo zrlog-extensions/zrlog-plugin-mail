@@ -37,12 +37,12 @@ public class MailUtil {
         final Message message = new MimeMessage(session);
         Address address = new InternetAddress(
                 prop.getProperty("mail.smtp.from"), displayName);
-        InternetAddress[] addressto = new InternetAddress[to.size()];
+        InternetAddress[] addresses = new InternetAddress[to.size()];
         for (int i = 0; i < to.size(); i++) {
-            addressto[i] = new InternetAddress((String) to.get(i));
+            addresses[i] = new InternetAddress((String) to.get(i));
         }
         message.setFrom(address);
-        message.setRecipients(Message.RecipientType.TO, addressto);
+        message.setRecipients(Message.RecipientType.TO, addresses);
         message.setSubject(title);
         Multipart mp = new MimeMultipart();
         MimeBodyPart mbp = new MimeBodyPart();
@@ -52,10 +52,12 @@ public class MailUtil {
         // 附件功能
         for (File file : files) {
             mbp = new MimeBodyPart();
-            FileDataSource fds = new FileDataSource(file);
-            mbp.setDataHandler(new DataHandler(fds));
-            mbp.setFileName(fds.getName());
-            mp.addBodyPart(mbp);
+            if (file.exists()) {
+                FileDataSource fds = new FileDataSource(file);
+                mbp.setDataHandler(new DataHandler(fds));
+                mbp.setFileName(fds.getName());
+                mp.addBodyPart(mbp);
+            }
         }
 
         message.setContent(mp);

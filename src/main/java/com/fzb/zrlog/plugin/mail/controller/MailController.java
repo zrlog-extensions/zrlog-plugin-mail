@@ -52,7 +52,7 @@ public class MailController {
             public void handler(MsgPacket msgPacket) {
                 Map map = new JSONDeserializer<Map>().deserialize(msgPacket.getDataStr());
                 map.put("url", requestInfo.getUrl());
-                session.sendMsg(ContentType.HTML, JtwigUtil.render(MailController.class.getResourceAsStream("/templates/index.twig.html"), map), requestPacket.getMethodStr(), requestPacket.getMsgId(), MsgPacketStatus.RESPONSE_SUCCESS, null);
+                session.sendMsg(ContentType.HTML, JtwigUtil.render(MailController.class.getResourceAsStream("/templates/index.twig.html"), map,session.getPlugin()), requestPacket.getMethodStr(), requestPacket.getMsgId(), MsgPacketStatus.RESPONSE_SUCCESS);
             }
         });
 
@@ -73,7 +73,7 @@ public class MailController {
                     LOGGER.error("send email error ", e);
                     response.put("status", 500);
                 }
-                session.sendMsg(ContentType.JSON, response, requestPacket.getMethodStr(), requestPacket.getMsgId(), MsgPacketStatus.RESPONSE_SUCCESS, null);
+                session.sendMsg(ContentType.JSON, response, requestPacket.getMethodStr(), requestPacket.getMsgId(), MsgPacketStatus.RESPONSE_SUCCESS);
             }
         });
 
