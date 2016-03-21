@@ -13,7 +13,10 @@ import com.fzb.zrlog.plugin.type.ActionType;
 import flexjson.JSONDeserializer;
 import org.apache.log4j.Logger;
 
+import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -52,7 +55,7 @@ public class MailController {
             public void handler(MsgPacket msgPacket) {
                 Map map = new JSONDeserializer<Map>().deserialize(msgPacket.getDataStr());
                 map.put("url", requestInfo.getUrl());
-                session.sendMsg(ContentType.HTML, JtwigUtil.render(MailController.class.getResourceAsStream("/templates/index.twig.html"), map,session.getPlugin()), requestPacket.getMethodStr(), requestPacket.getMsgId(), MsgPacketStatus.RESPONSE_SUCCESS);
+                session.sendMsg(ContentType.HTML, JtwigUtil.render(MailController.class.getResourceAsStream("/templates/index.twig.html"), map, session.getPlugin()), requestPacket.getMethodStr(), requestPacket.getMsgId(), MsgPacketStatus.RESPONSE_SUCCESS);
             }
         });
 
@@ -67,7 +70,7 @@ public class MailController {
                 Map map = new JSONDeserializer<Map>().deserialize(msgPacket.getDataStr());
                 Map<String, Object> response = new HashMap<>();
                 try {
-                    MailUtil.sendMail(map.get("to").toString(), "这是一封测试邮件", "<h3>这是一封测试邮件</h3>\n", map);
+                    MailUtil.sendMail(map.get("to").toString(), "这是一封测试邮件", "<h3>这是一封测试邮件</h3>\n", map, new ArrayList<File>());
                     response.put("status", 200);
                 } catch (Exception e) {
                     LOGGER.error("send email error ", e);
