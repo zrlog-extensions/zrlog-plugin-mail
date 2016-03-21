@@ -16,22 +16,20 @@ public class MailUtil {
     private MailUtil() {
     }
 
-    public static boolean sendMail(String to, String title, String content, Map<String, Object> sMTPMap, File... files)
+    public static boolean sendMail(String to, String title, String content, Map<String, Object> sMTPMap, List<File> files)
             throws Exception {
-        List tos = new ArrayList();
+        List<String> tos = new ArrayList();
         tos.add(to);
         return sendMail(tos, title, content, sMTPMap, files);
     }
 
-    public static boolean sendMail(List<String> to, String title, String content, Map<String, Object> sMTPMap, File... files) throws Exception {
+    public static boolean sendMail(List<String> to, String title, String content, Map<String, Object> sMTPMap, List<File> files) throws Exception {
         final Properties prop = getMailSettings(sMTPMap);
         String displayName = prop.getProperty("mail.smtp.displayName");
         Authenticator sMTPAuth = new Authenticator() {
             protected PasswordAuthentication getPasswordAuthentication() {
                 return new PasswordAuthentication(prop.getProperty("mail.smtp.username"), prop.getProperty("mail.smtp.password"));
             }
-
-            ;
         };
         final Session session = Session.getDefaultInstance(prop, sMTPAuth);
         final Message message = new MimeMessage(session);
@@ -39,7 +37,7 @@ public class MailUtil {
                 prop.getProperty("mail.smtp.from"), displayName);
         InternetAddress[] addresses = new InternetAddress[to.size()];
         for (int i = 0; i < to.size(); i++) {
-            addresses[i] = new InternetAddress((String) to.get(i));
+            addresses[i] = new InternetAddress(to.get(i));
         }
         message.setFrom(address);
         message.setRecipients(Message.RecipientType.TO, addresses);
@@ -82,7 +80,7 @@ public class MailUtil {
 
     public static boolean sendMail(List<String> to, String title, String content, Map<String, Object> sMTPMap)
             throws Exception {
-        return sendMail(to, title, content, sMTPMap, new File(""));
+        return sendMail(to, title, content, sMTPMap, new ArrayList<File>());
     }
 
     private static Properties getMailSettings(Map<String, Object> sMTPMap) {
