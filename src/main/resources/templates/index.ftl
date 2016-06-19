@@ -33,6 +33,8 @@
 </head>
 <body>
 <div class="main-container">
+    <div class="rows">
+        <div class="col-xs-12">
     <form id="ajaxemailServiceMsg" class="form-horizontal" role="form">
         <h4 class="header blue">邮件服务，让你更快的了解网站情况</h4>
 
@@ -40,7 +42,7 @@
             <label class="col-sm-3 control-label no-padding-right" for="form-field-1"> 登陆名 </label>
 
             <div class="col-sm-9">
-                <input type="text" id="form-field-1" class="col-xs-10 col-sm-5" value="${from?''}" name="from">
+                <input type="text" id="form-field-1" class="col-xs-10 col-sm-5" value="${from!''}" name="from">
             </div>
         </div>
 
@@ -48,7 +50,7 @@
             <label class="col-sm-3 control-label no-padding-right" for="form-field-1"> SMTP服务器 </label>
 
             <div class="col-sm-9">
-                <input type="text" id="form-field-1" class="col-xs-10 col-sm-5" value="${smtpServer?''}"
+                <input type="text" id="form-field-1" class="col-xs-10 col-sm-5" value="${smtpServer!''}"
                        name="smtpServer">
             </div>
         </div>
@@ -56,7 +58,7 @@
             <label class="col-sm-3 control-label no-padding-right" for="form-field-1"> 密码 </label>
 
             <div class="col-sm-9">
-                <input type="password" id="form-field-1" class="col-xs-10 col-sm-5" value="${password?''}"
+                <input type="password" id="form-field-1" class="col-xs-10 col-sm-5" value="${password!''}"
                        name="password">
             </div>
         </div>
@@ -64,7 +66,7 @@
             <label class="col-sm-3 control-label no-padding-right" for="form-field-1"> 端口 </label>
 
             <div class="col-sm-9">
-                <input type="text" id="form-field-1" class="col-xs-10 col-sm-5" value="${port?''}" name="port"
+                <input type="text" id="form-field-1" class="col-xs-10 col-sm-5" value="${port!''}" name="port"
                        maxlength="5">
             </div>
         </div>
@@ -73,7 +75,7 @@
             <label class="col-sm-3 control-label no-padding-right" for="form-field-1"> 收件邮件地址 </label>
 
             <div class="col-sm-9">
-                <input type="text" id="form-field-1" class="col-xs-10 col-sm-5" value="${to?''}" name="to">
+                <input type="text" id="form-field-1" class="col-xs-10 col-sm-5" value="${to!''}" name="to">
             </div>
         </div>
         <div class="clearfix form-actions">
@@ -87,6 +89,8 @@
             </div>
         </div>
     </form>
+</div>
+    </div>
 </div>
 <input id="gritter-light" checked="" type="checkbox" class="ace ace-switch ace-switch-5"/>
 </body>
