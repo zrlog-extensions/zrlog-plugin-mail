@@ -7,7 +7,6 @@ import com.fzb.zrlog.plugin.data.codec.ContentType;
 import com.fzb.zrlog.plugin.data.codec.HttpRequestInfo;
 import com.fzb.zrlog.plugin.data.codec.MsgPacket;
 import com.fzb.zrlog.plugin.data.codec.MsgPacketStatus;
-import com.fzb.zrlog.plugin.mail.util.JtwigUtil;
 import com.fzb.zrlog.plugin.mail.util.MailUtil;
 import com.fzb.zrlog.plugin.type.ActionType;
 import flexjson.JSONDeserializer;
@@ -16,7 +15,6 @@ import org.apache.log4j.Logger;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -55,7 +53,7 @@ public class MailController {
             public void handler(MsgPacket msgPacket) {
                 Map map = new JSONDeserializer<Map>().deserialize(msgPacket.getDataStr());
                 map.put("url", requestInfo.getUrl());
-                session.sendMsg(ContentType.HTML, JtwigUtil.render(MailController.class.getResourceAsStream("/templates/index.twig.html"), map, session.getPlugin()), requestPacket.getMethodStr(), requestPacket.getMsgId(), MsgPacketStatus.RESPONSE_SUCCESS);
+                session.responseHtml("/templates/index.ftl", map, requestPacket.getMethodStr(), requestPacket.getMsgId());
             }
         });
 

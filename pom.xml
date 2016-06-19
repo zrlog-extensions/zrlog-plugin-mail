@@ -15,14 +15,9 @@
             <version>1.0-SNAPSHOT</version>
         </dependency>
         <dependency>
-            <groupId>com.lyncode</groupId>
-            <artifactId>jtwig-core</artifactId>
-            <version>3.1.1</version>
-        </dependency>
-        <dependency>
-            <groupId>com.lyncode</groupId>
-            <artifactId>jtwig-functions</artifactId>
-            <version>3.1.1</version>
+            <artifactId>freemarker-render</artifactId>
+            <groupId>com.fzb.zrlog.plugin</groupId>
+            <version>1.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>javax.mail</groupId>

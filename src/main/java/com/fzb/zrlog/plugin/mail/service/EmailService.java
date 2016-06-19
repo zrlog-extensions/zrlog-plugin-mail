@@ -11,7 +11,6 @@ import com.fzb.zrlog.plugin.data.codec.MsgPacketStatus;
 import com.fzb.zrlog.plugin.mail.util.MailUtil;
 import com.fzb.zrlog.plugin.type.ActionType;
 import flexjson.JSONDeserializer;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.log4j.Logger;
 
 import java.io.File;
