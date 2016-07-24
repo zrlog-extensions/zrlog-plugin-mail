@@ -7,6 +7,9 @@
     <groupId>com.fzb.zrlog.plugin</groupId>
     <artifactId>email</artifactId>
     <version>1.0-SNAPSHOT</version>
+    <properties>
+        <outputDirectory>/home/xiaochun/zrlog-plugin/</outputDirectory>
+    </properties>
 
     <dependencies>
         <dependency>
@@ -65,7 +68,7 @@
                         <descriptorRef>jar-with-dependencies</descriptorRef>
                     </descriptorRefs>
                     <appendAssemblyId>false</appendAssemblyId>
-                    <outputDirectory>/home/xiaochun/zrlog-plugin/</outputDirectory>
+                    <outputDirectory>${outputDirectory}</outputDirectory>
                 </configuration>
             </plugin>
         </plugins>
