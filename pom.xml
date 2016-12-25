@@ -7,6 +7,7 @@
     <groupId>com.fzb.zrlog.plugin</groupId>
     <artifactId>email</artifactId>
     <version>1.0-SNAPSHOT</version>
+    <packaging>jar</packaging>
     <properties>
         <outputDirectory>/home/xiaochun/zrlog-plugin/</outputDirectory>
     </properties>
@@ -15,11 +16,11 @@
         <dependency>
             <groupId>com.fzb.zrlog.plugin</groupId>
             <artifactId>common</artifactId>
-            <version>1.3</version>
+            <version>1.2.1</version>
         </dependency>
         <dependency>
-            <artifactId>freemarker-render</artifactId>
             <groupId>com.fzb.zrlog.plugin</groupId>
+            <artifactId>freemarker-render</artifactId>
             <version>1.0</version>
         </dependency>
         <dependency>
@@ -39,8 +40,7 @@
             <resource>
                 <directory>src/main/resources</directory>
                 <includes>
-                    <include>**/*.properties</include>
-                    <include>**/templates/**</include>
+                    <include>**/**</include>
                 </includes>
             </resource>
         </resources>
