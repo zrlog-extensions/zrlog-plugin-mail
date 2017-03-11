@@ -2,7 +2,6 @@
 <html>
 <head>
     <meta charset="utf-8"/>
-    <title>${_plugin.name} - V${_plugin.version}</title>
 
     <link rel="stylesheet" href="assets/css/bootstrap.min.css"/>
     <link rel="stylesheet" href="assets/css/font-awesome.min.css"/>
@@ -10,28 +9,10 @@
 
     <script src="assets/js/jquery-2.0.3.min.js"></script>
     <script src="assets/js/bootstrap.min.js"></script>
+    <script src="assets/js/vue.js"></script>
 
     <script src="assets/js/jquery.gritter.min.js"></script>
-    <script src="js/set_update.js"></script>
-    <script>
-        $(document).ready(function() {
-            $("#testEmailService").click(function(e){
-                $.get("testEmailService",function(data){
-                    if(data.success || data.status==200){
-                        $.gritter.add({
-                            title: '测试邮件发送成功...',
-                            class_name: 'gritter-success' + (!$('#gritter-light').get(0).checked ? ' gritter-light' : ''),
-                        });
-                    }else{
-                        $.gritter.add({
-                            title: '测试邮件发送失败...',
-                            class_name: 'gritter-error' + (!$('#gritter-light').get(0).checked ? ' gritter-light' : ''),
-                        });
-                    }
-                })
-            })
-        });
-    </script>
+    <script src="js/setting.js"></script>
 </head>
 <body>
 <div class="col-xs-8">

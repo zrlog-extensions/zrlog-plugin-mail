@@ -16,12 +16,7 @@
         <dependency>
             <groupId>com.fzb.zrlog.plugin</groupId>
             <artifactId>common</artifactId>
-            <version>1.2.1</version>
-        </dependency>
-        <dependency>
-            <groupId>com.fzb.zrlog.plugin</groupId>
-            <artifactId>freemarker-render</artifactId>
-            <version>1.0</version>
+            <version>1.2.3</version>
         </dependency>
         <dependency>
             <groupId>javax.mail</groupId>

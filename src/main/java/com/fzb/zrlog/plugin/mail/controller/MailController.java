@@ -52,8 +52,7 @@ public class MailController {
             @Override
             public void handler(MsgPacket msgPacket) {
                 Map map = new JSONDeserializer<Map>().deserialize(msgPacket.getDataStr());
-                map.put("url", requestInfo.getUrl());
-                session.responseHtml("/templates/index.ftl", map, requestPacket.getMethodStr(), requestPacket.getMsgId());
+                session.responseHtml("/templates/index.html", map, requestPacket.getMethodStr(), requestPacket.getMsgId());
             }
         });
 
