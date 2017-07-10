@@ -1,28 +1,30 @@
-package com.fzb.zrlog.plugin.mail.controller;
+package com.zrlog.plugin.mail.controller;
 
-import com.fzb.zrlog.plugin.IMsgPacketCallBack;
-import com.fzb.zrlog.plugin.IOSession;
-import com.fzb.zrlog.plugin.common.IdUtil;
-import com.fzb.zrlog.plugin.data.codec.ContentType;
-import com.fzb.zrlog.plugin.data.codec.HttpRequestInfo;
-import com.fzb.zrlog.plugin.data.codec.MsgPacket;
-import com.fzb.zrlog.plugin.data.codec.MsgPacketStatus;
-import com.fzb.zrlog.plugin.mail.util.MailUtil;
-import com.fzb.zrlog.plugin.type.ActionType;
-import flexjson.JSONDeserializer;
-import org.apache.log4j.Logger;
+import com.zrlog.plugin.IMsgPacketCallBack;
+import com.zrlog.plugin.IOSession;
+import com.zrlog.plugin.common.IdUtil;
+import com.zrlog.plugin.common.LoggerUtil;
+import com.zrlog.plugin.data.codec.ContentType;
+import com.zrlog.plugin.data.codec.HttpRequestInfo;
+import com.zrlog.plugin.data.codec.MsgPacket;
+import com.zrlog.plugin.data.codec.MsgPacketStatus;
+import com.zrlog.plugin.mail.util.MailUtil;
+import com.zrlog.plugin.type.ActionType;
+import com.google.gson.Gson;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Created by xiaochun on 2016/2/13.
  */
 public class MailController {
 
-    private static Logger LOGGER = Logger.getLogger(MailController.class);
+    private static Logger LOGGER = LoggerUtil.getLogger(MailController.class);
 
     private IOSession session;
     private MsgPacket requestPacket;
@@ -32,6 +34,18 @@ public class MailController {
         this.session = session;
         this.requestPacket = requestPacket;
         this.requestInfo = requestInfo;
+    }
+
+    public void info() {
+        Map<String, Object> keyMap = new HashMap<>();
+        keyMap.put("key", "to,from,smtpServer,password,port");
+        session.sendJsonMsg(keyMap, ActionType.GET_WEBSITE.name(), IdUtil.getInt(), MsgPacketStatus.SEND_REQUEST, new IMsgPacketCallBack() {
+            @Override
+            public void handler(MsgPacket msgPacket) {
+                Map map = new Gson().fromJson(msgPacket.getDataStr(), Map.class);
+                session.sendMsg(new MsgPacket(map, ContentType.JSON, MsgPacketStatus.RESPONSE_SUCCESS, requestPacket.getMsgId(), requestPacket.getMethodStr()));
+            }
+        });
     }
 
     public void update() {
@@ -46,15 +60,7 @@ public class MailController {
     }
 
     public void index() {
-        Map<String, Object> keyMap = new HashMap<>();
-        keyMap.put("key", "to,from,smtpServer,password,port");
-        session.sendJsonMsg(keyMap, ActionType.GET_WEBSITE.name(), IdUtil.getInt(), MsgPacketStatus.SEND_REQUEST, new IMsgPacketCallBack() {
-            @Override
-            public void handler(MsgPacket msgPacket) {
-                Map map = new JSONDeserializer<Map>().deserialize(msgPacket.getDataStr());
-                session.responseHtml("/templates/index.html", map, requestPacket.getMethodStr(), requestPacket.getMsgId());
-            }
-        });
+        session.responseHtml("/templates/index.html", new HashMap(), requestPacket.getMethodStr(), requestPacket.getMsgId());
 
     }
 
@@ -64,13 +70,13 @@ public class MailController {
         session.sendJsonMsg(keyMap, ActionType.GET_WEBSITE.name(), IdUtil.getInt(), MsgPacketStatus.SEND_REQUEST, new IMsgPacketCallBack() {
             @Override
             public void handler(MsgPacket msgPacket) {
-                Map map = new JSONDeserializer<Map>().deserialize(msgPacket.getDataStr());
+                Map map = new Gson().fromJson(msgPacket.getDataStr(), Map.class);
                 Map<String, Object> response = new HashMap<>();
                 try {
                     MailUtil.sendMail(map.get("to").toString(), "这是一封测试邮件", "<h3>这是一封测试邮件</h3>\n", map, new ArrayList<File>());
                     response.put("status", 200);
                 } catch (Exception e) {
-                    LOGGER.error("send email error ", e);
+                    LOGGER.log(Level.SEVERE,"send email error ", e);
                     response.put("status", 500);
                 }
                 session.sendMsg(ContentType.JSON, response, requestPacket.getMethodStr(), requestPacket.getMsgId(), MsgPacketStatus.RESPONSE_SUCCESS);

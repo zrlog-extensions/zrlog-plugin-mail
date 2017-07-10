@@ -28,11 +28,12 @@
         </div>
     </div>
     <form id="ajaxemailServiceMsg" class="form-horizontal" role="form">
+        <div id="vue-div">
         <div class="form-group">
             <label class="col-sm-3 control-label no-padding-right"> 登陆名 </label>
 
             <div class="col-sm-4">
-                <input type="text" class="form-control" value="${from!''}" name="from">
+                <input type="text" class="form-control" :value="val(mail.from)" name="from">
             </div>
         </div>
 
@@ -40,7 +41,7 @@
             <label class="col-sm-3 control-label no-padding-right"> SMTP服务器 </label>
 
             <div class="col-sm-4">
-                <input type="text" class="form-control" value="${smtpServer!''}"
+                <input type="text" class="form-control" :value="val(mail.smtpServer)"
                        name="smtpServer">
             </div>
         </div>
@@ -48,7 +49,7 @@
             <label class="col-sm-3 control-label no-padding-right"> 密码 </label>
 
             <div class="col-sm-4">
-                <input type="password" class="form-control" value="${password!''}"
+                <input type="password" class="form-control" :value="val(mail.password)"
                        name="password">
             </div>
         </div>
@@ -56,7 +57,7 @@
             <label class="col-sm-3 control-label no-padding-right"> 端口 </label>
 
             <div class="col-sm-1">
-                <input type="text" class="form-control" value="${port!'25'}" name="port"
+                <input type="text" class="form-control" :value="val(mail.port)"  name="port"
                        maxlength="5">
             </div>
         </div>
@@ -64,10 +65,11 @@
             <label class="col-sm-3 control-label no-padding-right"> 收件邮件地址 </label>
 
             <div class="col-sm-4">
-                <input type="text" class="form-control" value="${to!''}" name="to">
+                <input type="text" class="form-control" :value="val(mail.to)" name="to">
             </div>
         </div>
         <hr/>
+        </div>
         <div class="col-md-offset-3 col-md-9">
             <button class="btn btn-info" type="button" id="emailServiceMsg">
                 <i class="icon-ok bigger-110"></i> 提交

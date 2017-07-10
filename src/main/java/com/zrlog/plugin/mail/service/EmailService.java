@@ -1,25 +1,30 @@
-package com.fzb.zrlog.plugin.mail.service;
+package com.zrlog.plugin.mail.service;
 
-import com.fzb.zrlog.plugin.IMsgPacketCallBack;
-import com.fzb.zrlog.plugin.IOSession;
-import com.fzb.zrlog.plugin.api.IPluginService;
-import com.fzb.zrlog.plugin.api.Service;
-import com.fzb.zrlog.plugin.common.IdUtil;
-import com.fzb.zrlog.plugin.data.codec.ContentType;
-import com.fzb.zrlog.plugin.data.codec.MsgPacket;
-import com.fzb.zrlog.plugin.data.codec.MsgPacketStatus;
-import com.fzb.zrlog.plugin.mail.util.MailUtil;
-import com.fzb.zrlog.plugin.type.ActionType;
-import flexjson.JSONDeserializer;
-import org.apache.log4j.Logger;
+import com.zrlog.plugin.IMsgPacketCallBack;
+import com.zrlog.plugin.IOSession;
+import com.zrlog.plugin.api.IPluginService;
+import com.zrlog.plugin.api.Service;
+import com.zrlog.plugin.common.IdUtil;
+import com.zrlog.plugin.common.LoggerUtil;
+import com.zrlog.plugin.data.codec.ContentType;
+import com.zrlog.plugin.data.codec.MsgPacket;
+import com.zrlog.plugin.data.codec.MsgPacketStatus;
+import com.zrlog.plugin.mail.util.MailUtil;
+import com.zrlog.plugin.type.ActionType;
+import com.google.gson.Gson;
 
 import java.io.File;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @Service("emailService")
 public class EmailService implements IPluginService {
 
-    private static Logger LOGGER = Logger.getLogger(EmailService.class);
+    private static Logger LOGGER = LoggerUtil.getLogger(EmailService.class);
 
     @Override
     public void handle(final IOSession ioSession, final MsgPacket requestPacket) {
@@ -28,8 +33,8 @@ public class EmailService implements IPluginService {
         ioSession.sendJsonMsg(keyMap, ActionType.GET_WEBSITE.name(), IdUtil.getInt(), MsgPacketStatus.SEND_REQUEST, new IMsgPacketCallBack() {
             @Override
             public void handler(MsgPacket responseMsgPacket) {
-                Map<String, Object> map = new JSONDeserializer<Map<String, Object>>().deserialize(responseMsgPacket.getDataStr());
-                Map<String, Object> requestMap = new JSONDeserializer<Map>().deserialize(requestPacket.getDataStr());
+                Map<String, Object> map = new Gson().fromJson(responseMsgPacket.getDataStr(), Map.class);
+                Map<String, Object> requestMap = new Gson().fromJson(requestPacket.getDataStr(), Map.class);
                 Map<String, Object> response = new HashMap<>();
                 try {
                     if (requestMap.get("title") == null || requestMap.get("content") == null) {
@@ -39,7 +44,7 @@ public class EmailService implements IPluginService {
                         sendEmail(map, requestMap);
                     }
                 } catch (Exception e) {
-                    LOGGER.error("send email error ", e);
+                    LOGGER.log(Level.SEVERE, "send email error ", e);
                     response.put("status", 500);
                 }
                 ioSession.sendMsg(ContentType.JSON, response, requestPacket.getMethodStr(), requestPacket.getMsgId(), MsgPacketStatus.RESPONSE_SUCCESS);

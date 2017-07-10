@@ -4,9 +4,9 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.fzb.zrlog.plugin</groupId>
-    <artifactId>email</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <groupId>com.zrlog</groupId>
+    <artifactId>plugin-email</artifactId>
+    <version>1.2.0</version>
     <packaging>jar</packaging>
     <properties>
         <outputDirectory>/home/xiaochun/zrlog-plugin/</outputDirectory>
@@ -14,23 +14,19 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.fzb.zrlog.plugin</groupId>
-            <artifactId>common</artifactId>
-            <version>1.2.3</version>
+            <groupId>com.zrlog</groupId>
+            <artifactId>plugin-common</artifactId>
+            <version>1.3.0</version>
         </dependency>
         <dependency>
             <groupId>javax.mail</groupId>
             <artifactId>mail</artifactId>
             <version>1.4.7</version>
         </dependency>
-        <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
-            <version>1.2.17</version>
-        </dependency>
     </dependencies>
 
     <build>
+        <finalName>mail</finalName>
         <resources>
             <resource>
                 <directory>src/main/resources</directory>
@@ -55,7 +51,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>com.fzb.zrlog.plugin.mail.Start</mainClass>
+                            <mainClass>com.zrlog.plugin.mail.Start</mainClass>
                         </manifest>
                     </archive>
                     <finalName>mail</finalName>

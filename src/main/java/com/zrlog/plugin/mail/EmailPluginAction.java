@@ -1,10 +1,10 @@
-package com.fzb.zrlog.plugin.mail;
+package com.zrlog.plugin.mail;
 
-import com.fzb.zrlog.plugin.IOSession;
-import com.fzb.zrlog.plugin.api.IPluginAction;
-import com.fzb.zrlog.plugin.data.codec.HttpRequestInfo;
-import com.fzb.zrlog.plugin.data.codec.MsgPacket;
-import com.fzb.zrlog.plugin.mail.controller.MailController;
+import com.zrlog.plugin.IOSession;
+import com.zrlog.plugin.api.IPluginAction;
+import com.zrlog.plugin.data.codec.HttpRequestInfo;
+import com.zrlog.plugin.data.codec.MsgPacket;
+import com.zrlog.plugin.mail.controller.MailController;
 
 public class EmailPluginAction implements IPluginAction {
     @Override

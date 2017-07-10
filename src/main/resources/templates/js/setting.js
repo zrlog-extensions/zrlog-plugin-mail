@@ -1,16 +1,13 @@
 $(function(){
-    var qiniu = new Vue({
+    var mail = new Vue({
         el : '#vue-div',
         data : {
-            qiniu:{},
+            mail:{},
             version: '',
         },
         mounted : function(){
             $.get("info",function(e){
-                $("#syncTemplate-switch").bootstrapSwitch('state', e.syncTemplate);
-                $("#syncTemplate-switch").attr("value",e.syncTemplate);
-                qiniu.$set(qiniu,'qiniu',e);
-                qiniu.$set(qiniu,'version','v'+e.version);
+                mail.$set(mail,'mail',e);
             })
         },
         methods: {
@@ -19,10 +16,6 @@ $(function(){
             }
         }
     })
-
-    $('#syncTemplate-switch').on('switchChange.bootstrapSwitch', function (event, state) {
-        $("#syncTemplateVal").attr("value",state?"on":"off");
-    });
 
     $(".btn-info").click(function(){
         var formId="ajax"+$(this).attr("id");

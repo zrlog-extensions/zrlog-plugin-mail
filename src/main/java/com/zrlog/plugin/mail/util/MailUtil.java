@@ -1,4 +1,4 @@
-package com.fzb.zrlog.plugin.mail.util;
+package com.zrlog.plugin.mail.util;
 
 import javax.activation.DataHandler;
 import javax.activation.FileDataSource;
@@ -18,7 +18,7 @@ public class MailUtil {
 
     public static boolean sendMail(String to, String title, String content, Map<String, Object> sMTPMap, List<File> files)
             throws Exception {
-        List<String> tos = new ArrayList();
+        List<String> tos = new ArrayList<>();
         tos.add(to);
         return sendMail(tos, title, content, sMTPMap, files);
     }
@@ -85,7 +85,7 @@ public class MailUtil {
 
     private static Properties getMailSettings(Map<String, Object> sMTPMap) {
         Properties properties = new Properties();
-        properties.setProperty("mail.smtp.displayName", "zrlog 系统邮件");
+        properties.setProperty("mail.smtp.displayName", "ZrLog系统邮件");
         properties.setProperty("mail.smtp.auth", "true");
         properties.setProperty("mail.smtp.username", sMTPMap.get("from").toString());
         properties.setProperty("mail.smtp.port", sMTPMap.get("port").toString());
