@@ -1,17 +1,18 @@
 package com.zrlog.plugin.mail.service;
 
+import com.google.gson.Gson;
 import com.zrlog.plugin.IMsgPacketCallBack;
 import com.zrlog.plugin.IOSession;
 import com.zrlog.plugin.api.IPluginService;
 import com.zrlog.plugin.api.Service;
 import com.zrlog.plugin.common.IdUtil;
 import com.zrlog.plugin.common.LoggerUtil;
+import com.zrlog.plugin.common.model.PublicInfo;
 import com.zrlog.plugin.data.codec.ContentType;
 import com.zrlog.plugin.data.codec.MsgPacket;
 import com.zrlog.plugin.data.codec.MsgPacketStatus;
 import com.zrlog.plugin.mail.util.MailUtil;
 import com.zrlog.plugin.type.ActionType;
-import com.google.gson.Gson;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -24,7 +25,7 @@ import java.util.logging.Logger;
 @Service("emailService")
 public class EmailService implements IPluginService {
 
-    private static Logger LOGGER = LoggerUtil.getLogger(EmailService.class);
+    private static final Logger LOGGER = LoggerUtil.getLogger(EmailService.class);
 
     @Override
     public void handle(final IOSession ioSession, final MsgPacket requestPacket) {
@@ -47,6 +48,7 @@ public class EmailService implements IPluginService {
                     LOGGER.log(Level.SEVERE, "send email error ", e);
                     response.put("status", 500);
                 }
+
                 ioSession.sendMsg(ContentType.JSON, response, requestPacket.getMethodStr(), requestPacket.getMsgId(), MsgPacketStatus.RESPONSE_SUCCESS);
             }
 
@@ -54,6 +56,7 @@ public class EmailService implements IPluginService {
                 List<String> to = new ArrayList<>();
                 String content = "";
                 String title = "";
+
                 if (requestMap.get("to") == null) {
                     to.add(map.get("to").toString());
                 } else if (requestMap.get("to") instanceof List) {
@@ -81,6 +84,8 @@ public class EmailService implements IPluginService {
                     }
                 }
 
+                PublicInfo responseSync = ioSession.getResponseSync(ContentType.JSON, new HashMap<>(), ActionType.LOAD_PUBLIC_INFO, PublicInfo.class);
+                map.put("displayName", responseSync.getTitle());
                 MailUtil.sendMail(to, title, content, map, files);
             }
         });

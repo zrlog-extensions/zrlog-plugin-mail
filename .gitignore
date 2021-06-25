@@ -1,5 +1,3 @@
-/bin
-
 .idea
 **/logs
 *.pid
@@ -14,3 +12,5 @@
 .project
 *.*~
 *.log
+!.mvn/wrapper/maven-wrapper.jar
+mail.bgv

@@ -1,10 +1,9 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh">
 <head>
     <meta charset="utf-8"/>
 
     <link rel="stylesheet" href="assets/css/bootstrap.min.css"/>
-    <link rel="stylesheet" href="assets/css/font-awesome.min.css"/>
     <link rel="stylesheet" href="assets/css/jquery.gritter.css"/>
 
     <script src="assets/js/jquery-2.0.3.min.js"></script>
@@ -13,13 +12,31 @@
 
     <script src="assets/js/jquery.gritter.min.js"></script>
     <script src="js/setting.js"></script>
+
+    <style>
+        body {
+            margin: 0;
+            font-size: 16px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+            font-variant: tabular-nums;
+            line-height: 1.5;
+            font-feature-settings: 'tnum';
+            background: transparent;
+        }
+
+        .dark {
+            background-color: #000;
+            color: #fff
+        }
+    </style>
+    <title>邮件服务</title>
 </head>
-<body>
-<div class="col-xs-8">
-    <div class="page-header">
+<body style="margin: 0" class="${theme}">
+<div id="vue-div" style="width: 100%;max-width: 960px">
+    <div class="page-header" style="margin-top: 20px">
         <h3>
             邮件服务
-            <small>让你更快的了解网站情况</small>
+            <small>更便捷的了解网站情况</small>
         </h3>
         <div class="text-right">
             <button class="btn" type="button" id="testEmailService">
@@ -28,9 +45,8 @@
         </div>
     </div>
     <form id="ajaxemailServiceMsg" class="form-horizontal" role="form">
-        <div id="vue-div">
         <div class="form-group">
-            <label class="col-sm-3 control-label no-padding-right"> 登陆名 </label>
+            <label class="col-sm-3 control-label no-padding-right"> 发送邮箱地址 </label>
 
             <div class="col-sm-4">
                 <input type="text" class="form-control" :value="val(mail.from)" name="from">
@@ -57,7 +73,7 @@
             <label class="col-sm-3 control-label no-padding-right"> 端口 </label>
 
             <div class="col-sm-1">
-                <input type="text" class="form-control" :value="val(mail.port)"  name="port"
+                <input type="text" class="form-control" :value="val(mail.port)" name="port"
                        maxlength="5">
             </div>
         </div>
@@ -69,14 +85,14 @@
             </div>
         </div>
         <hr/>
-        </div>
-        <div class="col-md-offset-3 col-md-9">
+        <div class="col-md-offset-3 col-md-9" style="padding-left: 4px">
             <button class="btn btn-info" type="button" id="emailServiceMsg">
-                <i class="icon-ok bigger-110"></i> 提交
+                提交
             </button>
         </div>
     </form>
 </div>
 <input id="gritter-light" checked="" type="checkbox" style="display:none"/>
+<pre id="data" style="display: none">${data}</pre>
 </body>
 </html>
