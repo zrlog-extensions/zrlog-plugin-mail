@@ -8,7 +8,6 @@
     <link rel="stylesheet" href="assets/css/jquery.gritter.css"/>
 
     <script src="assets/js/jquery-2.0.3.min.js"></script>
-    <script src="assets/js/bootstrap.min.js"></script>
     <script src="assets/js/vue.js"></script>
 
     <script src="assets/js/jquery.gritter.min.js"></script>
@@ -59,12 +58,13 @@
             </button>
         </div>
     </div>
+    <hr style="color: #a4a1a1"/>
     <form id="ajaxemailServiceMsg" class="form-horizontal" role="form">
         <div class="form-group row mb-3">
             <label class="col-sm-3 control-label no-padding-right"> 发送邮箱地址 </label>
 
             <div class="col-sm-4">
-                <input type="text" class="form-control" :value="val(mail.from)" name="from">
+                <input type="email" required class="form-control" :value="val(mail.from)" name="from">
             </div>
         </div>
 
@@ -72,7 +72,7 @@
             <label class="col-sm-3 control-label no-padding-right"> SMTP服务器 </label>
 
             <div class="col-sm-4">
-                <input type="text" class="form-control" :value="val(mail.smtpServer)"
+                <input type="text" required class="form-control" :value="val(mail.smtpServer)"
                        name="smtpServer">
             </div>
         </div>
@@ -80,7 +80,7 @@
             <label class="col-sm-3 control-label no-padding-right"> 密码 </label>
 
             <div class="col-sm-4">
-                <input type="password" class="form-control" :value="val(mail.password)"
+                <input type="password" required class="form-control" :value="val(mail.password)"
                        name="password">
             </div>
         </div>
@@ -88,7 +88,7 @@
             <label class="col-sm-3 control-label no-padding-right"> 端口 </label>
 
             <div class="col-sm-2" style="max-width: 120px">
-                <input type="number" class="form-control" :value="val(mail.port)" name="port"
+                <input type="number" required class="form-control" :value="val(mail.port)" name="port"
                        maxlength="5">
             </div>
         </div>
@@ -96,7 +96,7 @@
             <label class="col-sm-3 control-label no-padding-right"> 收件邮件地址 </label>
 
             <div class="col-sm-4">
-                <input type="text" class="form-control" :value="val(mail.to)" name="to">
+                <input type="email" required class="form-control" :value="val(mail.to)" name="to">
             </div>
         </div>
         <hr style="color: #a4a1a1"/>
