@@ -13,7 +13,7 @@ $(function () {
         }
     })
 
-    $(".btn-info").click(function () {
+    $(".btn-primary").click(function () {
         const formId = "ajax" + $(this).attr("id");
         $.post('update', $("#" + formId).serialize(), function (data) {
             if (data.success || data.status === 200) {

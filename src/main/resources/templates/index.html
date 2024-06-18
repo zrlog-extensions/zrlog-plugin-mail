@@ -2,6 +2,7 @@
 <html lang="zh">
 <head>
     <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
 
     <link rel="stylesheet" href="assets/css/bootstrap.min.css"/>
     <link rel="stylesheet" href="assets/css/jquery.gritter.css"/>
@@ -28,6 +29,20 @@
             background-color: #000;
             color: #fff
         }
+        .mb-3 {
+            display: flex;
+            align-items: center;
+        }
+
+        .form-horizontal {
+            text-align: end;
+        }
+
+        @media (max-device-width: 600px) {
+            .form-horizontal {
+                text-align: start;
+            }
+        }
     </style>
     <title>${_plugin.name}</title>
 </head>
@@ -36,16 +51,16 @@
     <div class="page-header" style="margin-top: 20px">
         <h3>
             ${_plugin.name}
-            <small>${_plugin.desc}</small>
+            <small style="font-weight: 400;color: gray;font-size: 18px">${_plugin.desc}</small>
         </h3>
-        <div class="text-right">
-            <button class="btn" type="button" id="testEmailService">
+        <div class="text-right" style="text-align: end">
+            <button class="btn btn-info" type="button" id="testEmailService">
                 测试一下
             </button>
         </div>
     </div>
     <form id="ajaxemailServiceMsg" class="form-horizontal" role="form">
-        <div class="form-group">
+        <div class="form-group row mb-3">
             <label class="col-sm-3 control-label no-padding-right"> 发送邮箱地址 </label>
 
             <div class="col-sm-4">
@@ -53,7 +68,7 @@
             </div>
         </div>
 
-        <div class="form-group">
+        <div class="form-group row mb-3">
             <label class="col-sm-3 control-label no-padding-right"> SMTP服务器 </label>
 
             <div class="col-sm-4">
@@ -61,7 +76,7 @@
                        name="smtpServer">
             </div>
         </div>
-        <div class="form-group">
+        <div class="form-group row mb-3">
             <label class="col-sm-3 control-label no-padding-right"> 密码 </label>
 
             <div class="col-sm-4">
@@ -69,24 +84,25 @@
                        name="password">
             </div>
         </div>
-        <div class="form-group">
+        <div class="form-group row mb-3">
             <label class="col-sm-3 control-label no-padding-right"> 端口 </label>
 
-            <div class="col-sm-1">
-                <input type="text" class="form-control" :value="val(mail.port)" name="port"
+            <div class="col-sm-2" style="max-width: 120px">
+                <input type="number" class="form-control" :value="val(mail.port)" name="port"
                        maxlength="5">
             </div>
         </div>
-        <div class="form-group">
+        <div class="form-group row mb-3">
             <label class="col-sm-3 control-label no-padding-right"> 收件邮件地址 </label>
 
             <div class="col-sm-4">
                 <input type="text" class="form-control" :value="val(mail.to)" name="to">
             </div>
         </div>
-        <hr/>
-        <div class="col-md-offset-3 col-md-9" style="padding-left: 4px">
-            <button class="btn btn-info" type="button" id="emailServiceMsg">
+        <hr style="color: #a4a1a1"/>
+        <div class="form-group row mb-3">
+            <div class="col-sm-3"></div>
+            <button class="btn btn-primary" type="button" id="emailServiceMsg" style="max-width: 80px;margin-left: 12px">
                 提交
             </button>
         </div>
