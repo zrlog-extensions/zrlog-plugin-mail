@@ -14,3 +14,4 @@
 *.log
 !.mvn/wrapper/maven-wrapper.jar
 mail.bgv
+log
