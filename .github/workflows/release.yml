@@ -1,11 +1,11 @@
-name: ZrLog email release package
+name: plugin release package
 on:
   push:
     branches:
       - main
 jobs:
   build:
-    name: ZrLog oss package ${{ matrix.os }} ${{ matrix.architecture }}
+    name: Plugin package ${{ matrix.os }} ${{ matrix.architecture }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:

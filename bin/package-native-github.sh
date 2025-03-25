@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
+basePath=${1}
+mkdir -p ${basePath}
+echo "real target folder ${basePath}"
 
 java -version
 ./mvnw clean package
 ./mvnw -Pnative -Dagent exec:exec@java-agent -U
 ./mvnw -Pnative package
-basePath=/tmp/download/plugin
-mkdir -p ${basePath}
 binName=mail
 if [ -f "target/${binName}.exe" ];
 then

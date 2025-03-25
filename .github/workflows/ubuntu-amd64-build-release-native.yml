@@ -1,11 +1,11 @@
-name: build on Linux amd64 release native
+name: build on Linux amd64 preview native
 on:
   push:
     branches:
       - main
 jobs:
   build:
-    name: ZrLog on ${{ matrix.os }} ${{ matrix.architecture }}
+    name: Plugin on ${{ matrix.os }} ${{ matrix.architecture }}
     runs-on: ${{ matrix.os }}
 
     strategy:
