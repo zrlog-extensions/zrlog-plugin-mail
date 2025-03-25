@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.zrlog</groupId>
     <artifactId>plugin-mail</artifactId>
-    <version>3.0.26</version>
+    <version>3.0.31</version>
     <packaging>jar</packaging>
 
     <properties>
@@ -21,7 +21,7 @@
         <dependency>
             <groupId>com.hibegin</groupId>
             <artifactId>zrlog-plugin-common</artifactId>
-            <version>3.0.26</version>
+            <version>3.0.31</version>
         </dependency>
         <dependency>
             <groupId>com.sun.mail</groupId>
