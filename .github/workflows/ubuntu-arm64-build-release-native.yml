@@ -1,4 +1,4 @@
-name: build on Windows amd64 release native
+name: build on Linux arm64 release native
 on:
   push:
     branches:
@@ -10,8 +10,8 @@ jobs:
 
     strategy:
       matrix:
-        os: [ windows-latest ]
-        architecture: [ x86 ]
+        os: [ ubuntu-24.04-arm ]
+        architecture: [ arm64 ]
     steps:
       - uses: actions/checkout@v3
         with:
@@ -27,4 +27,4 @@ jobs:
       - name: Build and upload binary
         run: |
           bash -e bin/package-native-github.sh
-          bash -e bin/upload-bin-windows.sh ${{ secrets.SECRET_ID }} ${{ secrets.SECRET_KEY }} ${{ secrets.BUCKET }} /tmp/download plugin
+          bash -e bin/upload-bin.sh ${{ secrets.SECRET_ID }} ${{ secrets.SECRET_KEY }} ${{ secrets.BUCKET }} /tmp/download plugin

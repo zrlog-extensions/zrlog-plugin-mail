@@ -13,8 +13,11 @@ then
   mv "target/${binName}.exe" "${basePath}/${binName}-Windows-$(uname -m).exe"
   exit 0;
 fi
-if [ -f "target/${binName}" ];
+if [[ "$(uname -s)" == "Linux" ]];
 then
-  echo "unix"
+  echo "Linux"
+  mv target/${binName} ${basePath}/${binName}-$(uname -s)-$(dpkg --print-architecture).bin
+else
+  echo "MacOS"
   mv target/${binName} ${basePath}/${binName}-$(uname -s)-$(uname -m).bin
 fi
