@@ -153,7 +153,6 @@
                                     -H:+UnlockExperimentalVMOptions
                                     -march=compatibility --enable-preview -H:DashboardDump=${imageName}
                                     -H:+DashboardAll -H:IncludeResources=
-                                    --enable-monitoring=heapdump
                                 </arg>
                             </buildArgs>
                             <mainClass>${native.image.mainClass}</mainClass>
