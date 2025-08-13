@@ -52,7 +52,7 @@ public class MailController {
             Map<String, Object> data = new HashMap<>();
             data.put("theme", Objects.equals(requestInfo.getHeader().get("Dark-Mode"), "true") ? "dark" : "light");
             data.put("data", new Gson().toJson(map));
-            session.responseHtml("/templates/index.html", data, requestPacket.getMethodStr(), requestPacket.getMsgId());
+            session.responseHtml("/templates/index", data, requestPacket.getMethodStr(), requestPacket.getMsgId());
         });
     }
 
