@@ -1,40 +1,24 @@
 package com.zrlog.plugin.mail;
 
-import com.google.gson.Gson;
-import com.sun.mail.handlers.multipart_mixed;
-import com.sun.mail.handlers.text_html;
-import com.sun.mail.handlers.text_plain;
-import com.sun.mail.handlers.text_xml;
 import com.zrlog.plugin.common.PluginNativeImageUtils;
-import com.zrlog.plugin.data.codec.HttpRequestInfo;
-import com.zrlog.plugin.data.codec.MsgPacket;
 import com.zrlog.plugin.mail.controller.MailController;
 import com.zrlog.plugin.mail.model.EmailConfig;
 import com.zrlog.plugin.mail.model.EmailLogEntry;
 import com.zrlog.plugin.mail.model.EmailLogStore;
 import com.zrlog.plugin.mail.service.EmailService;
 import com.zrlog.plugin.mail.util.MailUtil;
-import com.zrlog.plugin.message.Plugin;
-import com.zrlog.plugin.IOSession;
-
 import jakarta.activation.CommandMap;
 import jakarta.activation.MailcapCommandMap;
+
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class GraalvmAgentApplication {
 
 
     public static void main(String[] args) throws IOException {
-        new Gson().toJson(new HttpRequestInfo());
-        new Gson().toJson(new Plugin());
-        new Gson().toJson(new EmailConfig());
-        new Gson().toJson(new EmailLogEntry());
-        new Gson().toJson(new EmailLogStore());
+        PluginNativeImageUtils.gsonNativeAgentByClazz(Arrays.asList(EmailConfig.class, EmailLogEntry.class, EmailLogStore.class));
         //new Gson().toJson(new User());
         //new Gson().toJson(new CommentsEntry());
         String basePath = System.getProperty("user.dir").replace("\\target", "").replace("/target", "");
@@ -65,12 +49,6 @@ public class GraalvmAgentApplication {
         try {
             EmailPluginAction.class.newInstance();
             EmailService.class.newInstance();
-            MailController.class.getConstructor(IOSession.class, MsgPacket.class, HttpRequestInfo.class);
-            MailController.class.getMethod("index");
-            MailController.class.getMethod("json");
-            MailController.class.getMethod("list");
-            MailController.class.getMethod("update");
-            MailController.class.getMethod("testEmailService");
         } catch (ReflectiveOperationException e) {
             e.printStackTrace();
         }
