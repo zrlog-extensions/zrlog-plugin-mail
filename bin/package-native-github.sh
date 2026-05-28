@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 basePath=${1}
-mkdir -p ${basePath}
+mkdir -p "${basePath}"
 echo "real target folder ${basePath}"
 
 java -version
+sh bin/build-info.sh
 ./mvnw ${2} -PnodeBuild clean package
 ./mvnw ${2} -Pnative -Dagent exec:exec@java-agent -U
 ./mvnw ${2} -Pnative package
@@ -31,7 +32,6 @@ then
   upx --best ${targetFile}
 else
   echo "MacOS"
-  mv target/${binName} ${basePath}/${binName}-$(uname -s)-$(uname -m).bin
   sourceFile="target/${binName}"
   targetFile="${basePath}/${binName}-$(uname -s)-$(uname -m).bin"
   brew install upx
