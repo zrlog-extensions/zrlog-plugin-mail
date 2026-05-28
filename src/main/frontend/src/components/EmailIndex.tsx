@@ -4,12 +4,17 @@ import type {ColumnsType} from "antd/es/table";
 import {
     Alert,
     Button,
+    Card,
+    Col,
     Descriptions,
     Drawer,
     Empty,
+    Flex,
     Form,
+    Grid,
     Input,
     InputNumber,
+    Row,
     Select,
     Space,
     Statistic,
@@ -92,6 +97,7 @@ const EmailIndex: FunctionComponent<EmailIndexProps> = ({data}) => {
     const [form] = Form.useForm<EmailConfig>();
     const [messageApi, contextHolder] = message.useMessage();
     const {token} = theme.useToken();
+    const screens = Grid.useBreakpoint();
 
     const loadLogs = async (page = logs.page, pageSize = logs.pageSize, nextFilters = filters) => {
         setLoading(true);
@@ -217,32 +223,53 @@ const EmailIndex: FunctionComponent<EmailIndexProps> = ({data}) => {
     const emptyDescription = "暂无发送记录。发送测试邮件或被其他插件调用邮件服务后会显示记录。";
 
     return (
-        <div className="email-shell">
+        <div style={{
+            width: "100%",
+            maxWidth: 1180,
+            padding: screens.xs ? 16 : 24,
+            boxSizing: "border-box",
+            margin: "0 auto",
+        }}>
             {contextHolder}
-            <div className="email-topbar">
+            <Flex
+                justify="space-between"
+                align={screens.xs ? "stretch" : "flex-start"}
+                vertical={screens.xs}
+                gap={16}
+                style={{ marginBottom: 20 }}
+            >
                 <div>
-                    <h1 className="email-title">邮件服务</h1>
-                    <div className="email-subtitle">SMTP 配置和最近 {config.retentionDays || 30} 天发送记录</div>
+                    <Typography.Title level={3} style={{ margin: 0 }}>邮件服务</Typography.Title>
+                    <Typography.Text type="secondary" style={{ marginTop: 4, display: "block" }}>
+                        SMTP 配置和最近 {config.retentionDays || 30} 天发送记录
+                    </Typography.Text>
                 </div>
                 <Space wrap>
                     <Button icon={<ReloadOutlined/>} onClick={refreshPage} loading={loading}>刷新</Button>
                     <Button icon={<SendOutlined/>} onClick={sendTest} loading={loading}>测试发送</Button>
                     <Button icon={<SettingOutlined/>} onClick={openSetting}>设置</Button>
                 </Space>
-            </div>
+            </Flex>
 
-            <div className="summary-grid">
+            <Row gutter={[12, 12]} style={{ marginBottom: 16 }}>
                 {metrics.map(metric => (
-                    <div className="summary-card" key={metric.label}>
-                        <Statistic title={metric.label} value={metric.value}/>
-                        <Tag className="summary-tag" color={statusColor(metric.status)}>{metric.status === "warning" ? "需关注" : "记录中"}</Tag>
-                    </div>
+                    <Col key={metric.label} xs={24} sm={12} md={6}>
+                        <Card size="small" style={{ position: "relative", minHeight: 92 }}>
+                            <Statistic title={metric.label} value={metric.value}/>
+                            <Tag
+                                color={statusColor(metric.status)}
+                                style={{ position: "absolute", top: 14, right: 12, margin: 0 }}
+                              >
+                                  {metric.status === "warning" ? "需关注" : "记录中"}
+                            </Tag>
+                        </Card>
+                    </Col>
                 ))}
-            </div>
+            </Row>
 
             {logs.total === 0 && (
                 <Alert
-                    className="empty-guide"
+                    style={{ marginBottom: 16 }}
                     type="info"
                     showIcon
                     message="还没有发送记录"
@@ -251,8 +278,10 @@ const EmailIndex: FunctionComponent<EmailIndexProps> = ({data}) => {
                 />
             )}
 
-            <section className="trend-panel">
-                <div className="panel-title">发送趋势</div>
+            <Card style={{ marginBottom: 16 }}>
+                <Typography.Text strong style={{ display: "block", fontSize: 15, marginBottom: 12 }}>
+                    发送趋势
+                </Typography.Text>
                 {trend.length === 0 ? (
                     <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无数据"/>
                 ) : (
@@ -266,10 +295,16 @@ const EmailIndex: FunctionComponent<EmailIndexProps> = ({data}) => {
                         point={{size: 3}}
                     />
                 )}
-            </section>
+            </Card>
 
-            <section className="log-panel">
-                <div className="log-toolbar">
+            <Card>
+                <Flex
+                    justify="space-between"
+                    align={screens.xs ? "stretch" : "center"}
+                    vertical={screens.xs}
+                    gap={12}
+                    style={{ marginBottom: 12 }}
+                >
                     <Space wrap>
                         <Input.Search
                             allowClear
@@ -293,7 +328,7 @@ const EmailIndex: FunctionComponent<EmailIndexProps> = ({data}) => {
                         />
                     </Space>
                     <Typography.Text type="secondary">共 {logs.total} 条</Typography.Text>
-                </div>
+                </Flex>
                 <Table
                     rowKey="id"
                     size="middle"
@@ -310,7 +345,7 @@ const EmailIndex: FunctionComponent<EmailIndexProps> = ({data}) => {
                     }}
                     onChange={pagination => loadLogs(pagination.current || 1, pagination.pageSize || 10)}
                 />
-            </section>
+            </Card>
 
             <Drawer
                 title="邮件设置"
