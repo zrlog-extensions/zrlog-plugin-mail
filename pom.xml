@@ -14,6 +14,7 @@
         <native.maven.plugin.version>0.10.2</native.maven.plugin.version>
         <native.image.mainClass>com.zrlog.plugin.mail.Application</native.image.mainClass>
         <native.image.agentMainClass>com.zrlog.plugin.mail.GraalvmAgentApplication</native.image.agentMainClass>
+        <frontendBuildOutputPath>../resources/templates</frontendBuildOutputPath>
     </properties>
 
 
@@ -38,6 +39,7 @@
                 <includes>
                     <include>**/*.properties</include>
                     <include>*.base64</include>
+                    <include>META-INF/native-image/**</include>
                     <include>**/templates/**</include>
                 </includes>
             </resource>
@@ -106,6 +108,60 @@
     </build>
 
     <profiles>
+        <profile>
+            <id>nodeBuild</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.github.eirslett</groupId>
+                        <artifactId>frontend-maven-plugin</artifactId>
+                        <version>1.15.0</version>
+                        <executions>
+                            <execution>
+                                <id>install node and yarn</id>
+                                <goals>
+                                    <goal>install-node-and-yarn</goal>
+                                </goals>
+                                <phase>generate-resources</phase>
+                            </execution>
+                            <execution>
+                                <id>yarn install</id>
+                                <goals>
+                                    <goal>yarn</goal>
+                                </goals>
+                                <configuration>
+                                    <arguments>install --registry=https://registry.npmmirror.com --frozen-lockfile</arguments>
+                                </configuration>
+                                <phase>generate-resources</phase>
+                            </execution>
+                            <execution>
+                                <id>yarn build</id>
+                                <goals>
+                                    <goal>yarn</goal>
+                                </goals>
+                                <configuration>
+                                    <arguments>build</arguments>
+                                    <environmentVariables>
+                                        <BUILD_PATH>${frontendBuildOutputPath}</BUILD_PATH>
+                                    </environmentVariables>
+                                </configuration>
+                                <phase>generate-resources</phase>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <nodeVersion>v20.20.2</nodeVersion>
+                            <yarnVersion>v1.22.18</yarnVersion>
+                            <npmVersion>8.11.0</npmVersion>
+                            <workingDirectory>src/main/frontend</workingDirectory>
+                            <installDirectory>target</installDirectory>
+                            <nodeDownloadRoot>https://npmmirror.com/mirrors/node/</nodeDownloadRoot>
+                            <yarnDownloadRoot>https://github.com/yarnpkg/yarn/releases/download/</yarnDownloadRoot>
+                            <npmRegistryURL>https://registry.npmmirror.com</npmRegistryURL>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
         <profile>
             <id>native</id>
             <build>

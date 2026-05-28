@@ -26,6 +26,7 @@ import java.util.logging.Logger;
 public class EmailService implements IPluginService {
 
     private static final Logger LOGGER = LoggerUtil.getLogger(EmailService.class);
+    private static final EmailRepository REPOSITORY = EmailRepository.getInstance();
 
     @Override
     public void handle(final IOSession ioSession, final MsgPacket requestPacket) {
@@ -37,45 +38,43 @@ public class EmailService implements IPluginService {
                 Map<String, Object> map = new Gson().fromJson(responseMsgPacket.getDataStr(), Map.class);
                 Map<String, Object> requestMap = new Gson().fromJson(requestPacket.getDataStr(), Map.class);
                 Map<String, Object> response = new HashMap<>();
+                SendContext sendContext = parseContext(map, requestMap);
                 try {
                     if (requestMap.get("title") == null || requestMap.get("content") == null) {
                         response.put("status", 401);
+                        REPOSITORY.record(ioSession, sendContext.to, sendContext.title, "服务调用", false, 401, "missing title or content", sendContext.attachmentCount);
                     } else {
                         response.put("status", 200);
-                        sendEmail(map, requestMap);
+                        sendEmail(map, requestMap, sendContext);
+                        REPOSITORY.record(ioSession, sendContext.to, sendContext.title, "服务调用", true, 200, "", sendContext.attachmentCount);
                     }
                 } catch (Exception e) {
                     LOGGER.log(Level.SEVERE, "send email error ", e);
                     response.put("status", 500);
+                    REPOSITORY.record(ioSession, sendContext.to, sendContext.title, "服务调用", false, 500, e.getMessage(), sendContext.attachmentCount);
                 }
 
                 ioSession.sendMsg(ContentType.JSON, response, requestPacket.getMethodStr(), requestPacket.getMsgId(), MsgPacketStatus.RESPONSE_SUCCESS);
             }
 
-            private void sendEmail(Map<String, Object> map, Map<String, Object> requestMap) throws Exception {
-                List<String> to = new ArrayList<>();
-                String content = "";
-                String title = "";
-
-                if (requestMap.get("to") == null) {
-                    to.add(map.get("to").toString());
+            private SendContext parseContext(Map<String, Object> map, Map<String, Object> requestMap) {
+                SendContext context = new SendContext();
+                if (requestMap.get("to") == null && map.get("to") != null) {
+                    context.to.add(map.get("to").toString());
                 } else if (requestMap.get("to") instanceof List) {
-                    to = (List) requestMap.get("to");
+                    context.to = (List) requestMap.get("to");
                 } else if (requestMap.get("to") instanceof String) {
-                    to.add(requestMap.get("to").toString());
+                    context.to.add(requestMap.get("to").toString());
                 }
-                //parse title
-                if (requestMap.get("title") instanceof List) {
-                    title = ((List) requestMap.get("title")).get(0).toString();
-                } else if (requestMap.get("title") instanceof String) {
-                    title = (String) requestMap.get("title");
+                context.title = firstString(requestMap.get("title"));
+                context.content = firstString(requestMap.get("content"));
+                if (requestMap.get("files") instanceof List) {
+                    context.attachmentCount = ((List) requestMap.get("files")).size();
                 }
-                //parse content
-                if (requestMap.get("content") instanceof List) {
-                    content = ((List) requestMap.get("content")).get(0).toString();
-                } else if (requestMap.get("content") instanceof String) {
-                    content = (String) requestMap.get("content");
-                }
+                return context;
+            }
+
+            private void sendEmail(Map<String, Object> map, Map<String, Object> requestMap, SendContext context) throws Exception {
                 List<File> files = new ArrayList<>();
                 if (requestMap.get("files") != null && requestMap.get("files") instanceof List) {
                     List<String> fileStrList = (List<String>) requestMap.get("files");
@@ -86,8 +85,25 @@ public class EmailService implements IPluginService {
 
                 PublicInfo responseSync = ioSession.getResponseSync(ContentType.JSON, new HashMap<>(), ActionType.LOAD_PUBLIC_INFO, PublicInfo.class);
                 map.put("displayName", responseSync.getTitle());
-                MailUtil.sendMail(to, title, content, map, files);
+                MailUtil.sendMail(context.to, context.title, context.content, map, files);
+            }
+
+            private String firstString(Object value) {
+                if (value instanceof List && !((List) value).isEmpty()) {
+                    return ((List) value).get(0).toString();
+                }
+                if (value instanceof String) {
+                    return (String) value;
+                }
+                return "";
             }
         });
+    }
+
+    private static class SendContext {
+        private List<String> to = new ArrayList<>();
+        private String title = "";
+        private String content = "";
+        private int attachmentCount;
     }
 }

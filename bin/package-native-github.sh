@@ -4,9 +4,9 @@ mkdir -p ${basePath}
 echo "real target folder ${basePath}"
 
 java -version
-./mvnw clean package
-./mvnw -Pnative -Dagent exec:exec@java-agent -U
-./mvnw -Pnative package
+./mvnw ${2} -PnodeBuild clean package
+./mvnw ${2} -Pnative -Dagent exec:exec@java-agent -U
+./mvnw ${2} -Pnative package
 binName=mail
 if [ -f "target/${binName}.exe" ];
 then
