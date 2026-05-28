@@ -61,6 +61,15 @@ public class MailController {
     public void list() {
         EmailConfig config = repository.readConfig(session);
         response(successMap(repository.page(session, params(), config.getRetentionDays())));
+        Map<String, Object> keyMap = new HashMap<>();
+        keyMap.put("key", "to,from,smtpServer,password,port");
+        session.sendJsonMsg(keyMap, ActionType.GET_WEBSITE.name(), IdUtil.getInt(), MsgPacketStatus.SEND_REQUEST, msgPacket -> {
+            Map map = new Gson().fromJson(msgPacket.getDataStr(), Map.class);
+            Map<String, Object> data = new HashMap<>();
+            data.put("theme", Objects.equals(requestInfo.getHeader().get("Dark-Mode"), "true") ? "dark" : "light");
+            data.put("data", new Gson().toJson(map));
+            session.responseHtml("/templates/index", data, requestPacket.getMethodStr(), requestPacket.getMsgId());
+        });
     }
 
     public void testEmailService() {

@@ -1,17 +1,16 @@
-name: build on macos arm64 preview native
+name: build release native
 on:
   push:
     branches:
       - main
 jobs:
   build:
-    name: Plugin on ${{ matrix.os }} ${{ matrix.architecture }}
+    name: plugin release package ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
 
     strategy:
       matrix:
-        os: [ macos-13 ]
-        architecture: [ x86_64 ]
+        os: [ ubuntu-22.04,ubuntu-24.04-arm,macos-15-intel,macos-14,windows-2022 ]
     steps:
       - uses: actions/checkout@v3
         with:
@@ -27,4 +26,4 @@ jobs:
       - name: Build and upload binary
         run: |
           bash -e bin/package-native-github.sh /tmp/download/plugin
-          bash -e bin/upload-bin.sh ${{ secrets.SECRET_ID }} ${{ secrets.SECRET_KEY }} ${{ secrets.BUCKET }} /tmp/download plugin
+          bash -e bin/upload-bin.sh ${{ secrets.SECRET_ID }} ${{ secrets.SECRET_KEY }} ${{ secrets.BUCKET }} /tmp/download plugin ${{ secrets.HOST }}
