@@ -23,6 +23,9 @@ public class MailUtil {
     }
 
     public static boolean sendMail(List<String> to, String title, String content, Map<String, Object> sMTPMap, List<File> files) throws Exception {
+        if (to == null || to.isEmpty()) {
+            throw new IllegalArgumentException("邮件插件未配置：收件人");
+        }
         final Properties prop = getMailSettings(sMTPMap);
         String displayName = prop.getProperty("mail.smtp.displayName");
         Authenticator sMTPAuth = new Authenticator() {
@@ -35,6 +38,9 @@ public class MailUtil {
         Address address = new InternetAddress(prop.getProperty("mail.smtp.from"), displayName);
         InternetAddress[] addresses = new InternetAddress[to.size()];
         for (int i = 0; i < to.size(); i++) {
+            if (to.get(i) == null || to.get(i).trim().isEmpty()) {
+                throw new IllegalArgumentException("邮件插件未配置：收件人");
+            }
             addresses[i] = new InternetAddress(to.get(i));
         }
         message.setFrom(address);
@@ -76,17 +82,36 @@ public class MailUtil {
 
     private static Properties getMailSettings(Map<String, Object> smtpMap) {
         Properties properties = new Properties();
-        String displayName = (String) smtpMap.get("displayName");
+        if (smtpMap == null) {
+            throw new IllegalArgumentException("邮件插件未配置：发件人、SMTP 服务器、密码、端口");
+        }
+        String displayName = stringValue(smtpMap.get("displayName"));
         if (Objects.isNull(displayName) || displayName.isEmpty()) {
             displayName = "ZrLog 系统邮件";
         }
+        String from = required(smtpMap, "from", "发件人");
+        String port = required(smtpMap, "port", "端口");
+        String password = required(smtpMap, "password", "密码");
+        String smtpServer = required(smtpMap, "smtpServer", "SMTP 服务器");
         properties.setProperty("mail.smtp.displayName", displayName);
         properties.setProperty("mail.smtp.auth", "true");
-        properties.setProperty("mail.smtp.username", smtpMap.get("from").toString());
-        properties.setProperty("mail.smtp.port", smtpMap.get("port").toString());
-        properties.setProperty("mail.smtp.password", smtpMap.get("password").toString());
-        properties.setProperty("mail.smtp.host", smtpMap.get("smtpServer").toString());
-        properties.setProperty("mail.smtp.from", smtpMap.get("from").toString());
+        properties.setProperty("mail.smtp.username", from);
+        properties.setProperty("mail.smtp.port", port);
+        properties.setProperty("mail.smtp.password", password);
+        properties.setProperty("mail.smtp.host", smtpServer);
+        properties.setProperty("mail.smtp.from", from);
         return properties;
+    }
+
+    private static String required(Map<String, Object> map, String key, String label) {
+        String value = stringValue(map.get(key));
+        if (value.trim().isEmpty()) {
+            throw new IllegalArgumentException("邮件插件未配置：" + label);
+        }
+        return value.trim();
+    }
+
+    private static String stringValue(Object value) {
+        return value == null ? "" : String.valueOf(value);
     }
 }
