@@ -66,7 +66,7 @@ public class MailController {
         session.sendJsonMsg(keyMap, ActionType.GET_WEBSITE.name(), IdUtil.getInt(), MsgPacketStatus.SEND_REQUEST, msgPacket -> {
             Map map = new Gson().fromJson(msgPacket.getDataStr(), Map.class);
             Map<String, Object> data = new HashMap<>();
-            data.put("theme", Objects.equals(requestInfo.getHeader().get("Dark-Mode"), "true") ? "dark" : "light");
+            data.put("theme", requestInfo.isDarkMode() ? "dark" : "light");
             data.put("data", new Gson().toJson(map));
             session.responseHtml("/templates/index", data, requestPacket.getMethodStr(), requestPacket.getMsgId());
         });
@@ -99,25 +99,15 @@ public class MailController {
         Map<String, Object> firstPageParams = new HashMap<>();
         firstPageParams.put("page", "1");
         firstPageParams.put("pageSize", "10");
-        PublicInfo publicInfo = publicInfo();
         Map<String, Object> data = new HashMap<>();
-        data.put("dark", publicInfo.getDarkMode() == null ? isDarkMode() : publicInfo.getDarkMode());
-        data.put("colorPrimary", notBlank(publicInfo.getAdminColorPrimary()) ? publicInfo.getAdminColorPrimary() : "#1677ff");
+        data.put("dark", requestInfo.isDarkMode());
+        data.put("colorPrimary", requestInfo.getAdminColorPrimary());
         data.put("plugin", session.getPlugin());
         data.put("config", config);
         data.put("summary", overview.get("summary"));
         data.put("trend", overview.get("trend"));
         data.put("logs", repository.page(session, firstPageParams, config.getRetentionDays()));
         return successMap(data);
-    }
-
-    private PublicInfo publicInfo() {
-        try {
-            PublicInfo publicInfo = session.getResponseSync(ContentType.JSON, new HashMap<>(), ActionType.LOAD_PUBLIC_INFO, PublicInfo.class);
-            return publicInfo == null ? new PublicInfo() : publicInfo;
-        } catch (Exception e) {
-            return new PublicInfo();
-        }
     }
 
     private Map<String, Object> params() {
@@ -155,7 +145,7 @@ public class MailController {
     }
 
     private boolean isDarkMode() {
-        return requestInfo.getHeader() != null && Objects.equals(requestInfo.getHeader().get("Dark-Mode"), "true");
+        return requestInfo.isDarkMode();
     }
 
     private boolean notBlank(String value) {
