@@ -37,10 +37,11 @@ import java.util.logging.Logger;
 public class EmailService implements IPluginService {
 
     private static final Logger LOGGER = LoggerUtil.getLogger(EmailService.class);
-    private static final EmailRepository REPOSITORY = EmailRepository.getInstance();
+
 
     @Override
     public void handle(final IOSession ioSession, final MsgPacket requestPacket) {
+        final EmailRepository REPOSITORY = new EmailRepository(ioSession);
         final Map<String, Object> keyMap = new HashMap<>();
         keyMap.put("key", "to,from,smtpServer,password,port");
         ioSession.sendJsonMsg(keyMap, ActionType.GET_WEBSITE.name(), IdUtil.getInt(), MsgPacketStatus.SEND_REQUEST, new IMsgPacketCallBack() {
@@ -60,23 +61,23 @@ public class EmailService implements IPluginService {
                     if (requestMap.get("title") == null || requestMap.get("content") == null) {
                         status = 401;
                         error = "missing title or content";
-                        REPOSITORY.record(ioSession, sendContext.to, sendContext.title, sendContext.source, false, status, error, sendContext.attachmentCount);
+                        REPOSITORY.record(sendContext.to, sendContext.title, sendContext.source, false, status, error, sendContext.attachmentCount);
                     } else {
                         error = validateConfig(map, sendContext);
                         if (!error.isEmpty()) {
                             status = 400;
-                            REPOSITORY.record(ioSession, sendContext.to, sendContext.title, sendContext.source, false, status, error, sendContext.attachmentCount);
+                            REPOSITORY.record(sendContext.to, sendContext.title, sendContext.source, false, status, error, sendContext.attachmentCount);
                         } else {
                             status = 200;
                             sendEmail(map, requestMap, sendContext);
-                            REPOSITORY.record(ioSession, sendContext.to, sendContext.title, sendContext.source, true, status, "", sendContext.attachmentCount);
+                            REPOSITORY.record(sendContext.to, sendContext.title, sendContext.source, true, status, "", sendContext.attachmentCount);
                         }
                     }
                 } catch (Exception e) {
                     LOGGER.log(Level.SEVERE, "send email error ", e);
                     status = 500;
                     error = e.getMessage();
-                    REPOSITORY.record(ioSession, sendContext.to, sendContext.title, sendContext.source, false, status, error, sendContext.attachmentCount);
+                    REPOSITORY.record(sendContext.to, sendContext.title, sendContext.source, false, status, error, sendContext.attachmentCount);
                 }
                 response.put("status", status);
                 sendResponse(ioSession, requestPacket, response, status, error);

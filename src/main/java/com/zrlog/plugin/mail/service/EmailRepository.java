@@ -3,32 +3,23 @@ package com.zrlog.plugin.mail.service;
 import com.google.gson.Gson;
 import com.zrlog.plugin.IOSession;
 import com.zrlog.plugin.common.LoggerUtil;
-import com.zrlog.plugin.data.codec.ContentType;
+import com.zrlog.plugin.common.SessionKvRepository;
 import com.zrlog.plugin.mail.model.EmailConfig;
 import com.zrlog.plugin.mail.model.EmailLogEntry;
 import com.zrlog.plugin.mail.model.EmailLogStore;
-import com.zrlog.plugin.type.ActionType;
 
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class EmailRepository {
 
     private static final Logger LOGGER = LoggerUtil.getLogger(EmailRepository.class);
-    private static final EmailRepository INSTANCE = new EmailRepository();
     private static final String STORE_KEY = "emailSendLogs";
     private static final String RETENTION_DAYS_KEY = "emailLogRetentionDays";
     private static final String CONFIG_KEYS = "to,from,smtpServer,password,port," + RETENTION_DAYS_KEY;
@@ -37,27 +28,25 @@ public class EmailRepository {
     private static final ZoneId ZONE = ZoneId.systemDefault();
     private final Gson gson = new Gson();
 
-    public static EmailRepository getInstance() {
-        return INSTANCE;
+    private final IOSession ioSession;
+
+    public EmailRepository(IOSession ioSession) {
+        this.ioSession = ioSession;
     }
 
-    public synchronized EmailConfig readConfig(IOSession session) {
-        Map<String, String> request = new HashMap<>();
-        request.put("key", CONFIG_KEYS);
-        Map responseMap = session.getResponseSync(ContentType.JSON, request, ActionType.GET_WEBSITE, Map.class);
+    public synchronized EmailConfig readConfig() {
+        Map<String, Object> responseMap = SessionKvRepository.of(ioSession).read(CONFIG_KEYS);
         EmailConfig config = new EmailConfig();
-        if (responseMap != null) {
-            config.setTo(stringValue(responseMap.get("to")));
-            config.setFrom(stringValue(responseMap.get("from")));
-            config.setSmtpServer(stringValue(responseMap.get("smtpServer")));
-            config.setPassword(stringValue(responseMap.get("password")));
-            config.setPort(stringValue(responseMap.get("port")));
-            config.setRetentionDays(normalizeRetentionDays(stringValue(responseMap.get(RETENTION_DAYS_KEY))));
-        }
+        config.setTo(stringValue(responseMap.get("to")));
+        config.setFrom(stringValue(responseMap.get("from")));
+        config.setSmtpServer(stringValue(responseMap.get("smtpServer")));
+        config.setPassword(stringValue(responseMap.get("password")));
+        config.setPort(stringValue(responseMap.get("port")));
+        config.setRetentionDays(normalizeRetentionDays(stringValue(responseMap.get(RETENTION_DAYS_KEY))));
         return config;
     }
 
-    public synchronized EmailConfig saveConfig(IOSession session, Map<String, Object> params) {
+    public synchronized EmailConfig saveConfig(Map<String, Object> params) {
         EmailConfig config = new EmailConfig();
         config.setTo(limit(stringValue(params.get("to")), 240));
         config.setFrom(limit(stringValue(params.get("from")), 240));
@@ -77,14 +66,14 @@ public class EmailRepository {
         request.put("password", config.getPassword());
         request.put("port", config.getPort());
         request.put(RETENTION_DAYS_KEY, String.valueOf(config.getRetentionDays()));
-        session.getResponseSync(ContentType.JSON, request, ActionType.SET_WEBSITE, Map.class);
+        SessionKvRepository.of(ioSession).write(request);
         return config;
     }
 
-    public synchronized void record(IOSession session, List<String> recipients, String subject, String source,
+    public synchronized void record(List<String> recipients, String subject, String source,
                                     boolean success, int status, String error, int attachmentCount) {
         try {
-            EmailLogStore store = readStore(session);
+            EmailLogStore store = readStore();
             EmailLogEntry entry = new EmailLogEntry();
             entry.setTimestamp(System.currentTimeMillis());
             entry.setRecipients(limitRecipients(recipients));
@@ -95,14 +84,14 @@ public class EmailRepository {
             entry.setError(limit(error, 500));
             entry.setAttachmentCount(Math.max(0, attachmentCount));
             store.getItems().add(entry);
-            writeStore(session, prune(store, readConfig(session).getRetentionDays()));
+            writeStore(prune(store, readConfig().getRetentionDays()));
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "record email send log error", e);
         }
     }
 
-    public synchronized Map<String, Object> overview(IOSession session, int retentionDays) {
-        List<EmailLogEntry> logs = listRecentLogs(session, retentionDays);
+    public synchronized Map<String, Object> overview(int retentionDays) {
+        List<EmailLogEntry> logs = listRecentLogs(retentionDays);
         int success = 0;
         int failed = 0;
         int attachmentCount = 0;
@@ -130,12 +119,12 @@ public class EmailRepository {
         return data;
     }
 
-    public synchronized Map<String, Object> page(IOSession session, Map<String, Object> params, int retentionDays) {
+    public synchronized Map<String, Object> page(Map<String, Object> params, int retentionDays) {
         int page = Math.max(1, parseInt(stringValue(params.get("page")), 1));
         int pageSize = Math.max(1, Math.min(100, parseInt(stringValue(params.get("pageSize")), 10)));
         String keyword = stringValue(params.get("keyword")).toLowerCase();
         String status = stringValue(params.get("status"));
-        List<EmailLogEntry> logs = listRecentLogs(session, retentionDays);
+        List<EmailLogEntry> logs = listRecentLogs(retentionDays);
         Collections.sort(logs, new Comparator<EmailLogEntry>() {
             @Override
             public int compare(EmailLogEntry left, EmailLogEntry right) {
@@ -167,9 +156,9 @@ public class EmailRepository {
         return data;
     }
 
-    private EmailLogStore readStore(IOSession session) {
+    private EmailLogStore readStore() {
         try {
-            String json = readWebsiteValue(session, STORE_KEY);
+            String json = readWebsiteValue(STORE_KEY);
             if (!notBlank(json)) {
                 return new EmailLogStore();
             }
@@ -181,13 +170,13 @@ public class EmailRepository {
         }
     }
 
-    private void writeStore(IOSession session, EmailLogStore store) {
+    private void writeStore(EmailLogStore store) {
         String json = gson.toJson(store);
         while (json.getBytes(StandardCharsets.UTF_8).length > MAX_VALUE_BYTES && !store.getItems().isEmpty()) {
             store.getItems().remove(0);
             json = gson.toJson(store);
         }
-        writeWebsiteValue(session, STORE_KEY, json);
+        writeWebsiteValue(STORE_KEY, json);
     }
 
     private EmailLogStore prune(EmailLogStore store, int retentionDays) {
@@ -202,8 +191,8 @@ public class EmailRepository {
         return store;
     }
 
-    private List<EmailLogEntry> listRecentLogs(IOSession session, int retentionDays) {
-        return prune(readStore(session), retentionDays).getItems();
+    private List<EmailLogEntry> listRecentLogs(int retentionDays) {
+        return prune(readStore(), retentionDays).getItems();
     }
 
     private List<Map<String, Object>> metrics(int retentionDays, int total, int success, int failed, int attachmentCount) {
@@ -249,20 +238,12 @@ public class EmailRepository {
         return map;
     }
 
-    private String readWebsiteValue(IOSession session, String key) {
-        Map<String, String> request = new HashMap<>();
-        request.put("key", key);
-        Map responseMap = session.getResponseSync(ContentType.JSON, request, ActionType.GET_WEBSITE, Map.class);
-        if (responseMap == null || responseMap.get(key) == null) {
-            return "";
-        }
-        return String.valueOf(responseMap.get(key));
+    private String readWebsiteValue(String key) {
+        return SessionKvRepository.of(ioSession).get(key).orElse("");
     }
 
-    private void writeWebsiteValue(IOSession session, String key, String value) {
-        Map<String, String> request = new HashMap<>();
-        request.put(key, value);
-        session.getResponseSync(ContentType.JSON, request, ActionType.SET_WEBSITE, Map.class);
+    private void writeWebsiteValue(String key, String value) {
+        SessionKvRepository.of(ioSession).put(key, value);
     }
 
     private List<String> limitRecipients(List<String> recipients) {

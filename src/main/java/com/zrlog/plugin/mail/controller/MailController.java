@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -33,17 +32,18 @@ public class MailController {
     private final IOSession session;
     private final MsgPacket requestPacket;
     private final HttpRequestInfo requestInfo;
-    private final EmailRepository repository = EmailRepository.getInstance();
+    private final EmailRepository repository;
     private final Gson gson = new Gson();
 
     public MailController(IOSession session, MsgPacket requestPacket, HttpRequestInfo requestInfo) {
         this.session = session;
         this.requestPacket = requestPacket;
         this.requestInfo = requestInfo;
+        this.repository = new EmailRepository(session);
     }
 
     public void update() {
-        EmailConfig config = repository.saveConfig(session, params());
+        EmailConfig config = repository.saveConfig(params());
         response(successMap(config));
     }
 
@@ -59,8 +59,8 @@ public class MailController {
     }
 
     public void list() {
-        EmailConfig config = repository.readConfig(session);
-        response(successMap(repository.page(session, params(), config.getRetentionDays())));
+        EmailConfig config = repository.readConfig();
+        response(successMap(repository.page(params(), config.getRetentionDays())));
         Map<String, Object> keyMap = new HashMap<>();
         keyMap.put("key", "to,from,smtpServer,password,port");
         session.sendJsonMsg(keyMap, ActionType.GET_WEBSITE.name(), IdUtil.getInt(), MsgPacketStatus.SEND_REQUEST, msgPacket -> {
@@ -73,7 +73,7 @@ public class MailController {
     }
 
     public void testEmailService() {
-        EmailConfig config = repository.readConfig(session);
+        EmailConfig config = repository.readConfig();
         Map<String, Object> smtpMap = configMap(config);
         Map<String, Object> response = new HashMap<>();
         List<String> recipients = new ArrayList<>();
@@ -83,19 +83,19 @@ public class MailController {
             PublicInfo responseSync = session.getResponseSync(ContentType.JSON, new HashMap<>(), ActionType.LOAD_PUBLIC_INFO, PublicInfo.class);
             smtpMap.put("displayName", responseSync.getTitle());
             MailUtil.sendMail(config.getTo(), subject, "<div>当你看到这封邮件的时候，说明邮件服务已经可以正常工作了</div>\n", smtpMap, new ArrayList<>());
-            repository.record(session, recipients, subject, "测试发送", true, 200, "", 0);
+            repository.record(recipients, subject, "测试发送", true, 200, "", 0);
             response.put("status", 200);
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "send email error ", e);
-            repository.record(session, recipients, subject, "测试发送", false, 500, e.getMessage(), 0);
+            repository.record(recipients, subject, "测试发送", false, 500, e.getMessage(), 0);
             response.put("status", 500);
         }
         response(successMap(response));
     }
 
     private Map<String, Object> pageData() {
-        EmailConfig config = repository.readConfig(session);
-        Map<String, Object> overview = repository.overview(session, config.getRetentionDays());
+        EmailConfig config = repository.readConfig();
+        Map<String, Object> overview = repository.overview(config.getRetentionDays());
         Map<String, Object> firstPageParams = new HashMap<>();
         firstPageParams.put("page", "1");
         firstPageParams.put("pageSize", "10");
@@ -106,7 +106,7 @@ public class MailController {
         data.put("config", config);
         data.put("summary", overview.get("summary"));
         data.put("trend", overview.get("trend"));
-        data.put("logs", repository.page(session, firstPageParams, config.getRetentionDays()));
+        data.put("logs", repository.page(firstPageParams, config.getRetentionDays()));
         return successMap(data);
     }
 
