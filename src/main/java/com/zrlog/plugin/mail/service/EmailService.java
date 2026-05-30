@@ -28,8 +28,8 @@ import java.util.logging.Logger;
 @Capability(
         key = "notification.email.send",
         type = "notification_channel",
-        label = "邮件通知",
-        description = "通过 ZrLog 邮件配置发送标准通知",
+        label = "发送邮件通知",
+        description = "通过已配置的 SMTP 服务发送通知邮件，并记录发送结果。",
         exposure = {"notification"},
         channel = "email",
         timeoutSeconds = 60

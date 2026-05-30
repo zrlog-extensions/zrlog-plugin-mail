@@ -5,7 +5,7 @@ on:
       - main
 jobs:
   build:
-    name: Plugin package ${{ matrix.os }} ${{ matrix.architecture }}
+    name: plugin relase package ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -13,13 +13,23 @@ jobs:
         architecture: [ amd64 ]
     steps:
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Cache node modules admin
+        uses: actions/cache@v3
+        with:
+          path: src/main/frontend/node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('src/main/frontend/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
       - uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
-          java-version: '21'
+          java-version: '11'
           cache: 'maven'
       - name: Build with Maven
         run: |
           mkdir -p /tmp/download
-          bash -e ./mvnw -U -PnodeBuild clean package -DoutputDirectory=/tmp/download/plugin
+          bash -e bin/build-info.sh
+          bash -e ./mvnw -PnodeBuild clean package assembly:single -DoutputDirectory=/tmp/download/plugin
           bash bin/upload-bin.sh ${{ secrets.SECRET_ID }} ${{ secrets.SECRET_KEY }} ${{ secrets.BUCKET }} /tmp/download plugin ${{ secrets.HOST }}
