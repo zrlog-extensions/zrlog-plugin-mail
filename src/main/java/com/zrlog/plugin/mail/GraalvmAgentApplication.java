@@ -1,5 +1,7 @@
 package com.zrlog.plugin.mail;
 
+import com.zrlog.plugin.RunConstants;
+import com.zrlog.plugin.type.RunType;
 import com.zrlog.plugin.common.PluginNativeImageUtils;
 import com.zrlog.plugin.mail.controller.MailController;
 import com.zrlog.plugin.mail.model.EmailConfig;
@@ -18,6 +20,7 @@ public class GraalvmAgentApplication {
 
 
     public static void main(String[] args) throws IOException {
+        RunConstants.runType = RunType.AGENT;
         PluginNativeImageUtils.gsonNativeAgentByClazz(Arrays.asList(EmailConfig.class, EmailLogEntry.class, EmailLogStore.class));
         String basePath = System.getProperty("user.dir").replace("\\target", "").replace("/target", "");
         //PathKit.setRootPath(basePath);
