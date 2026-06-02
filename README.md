@@ -1,6 +1,15 @@
-# zrlog-plugin-mail
+# zrlog-plugin-email
 
-ZrLog 邮件服务插件。当前版本保留旧 `emailService` 服务入口，同时通过 `notification.email.send` 暴露为 v4 插件运行时的标准 `email` 通知通道。
+ZrLog 邮件服务插件。通过 SMTP 发送系统通知邮件，并记录最近的发送结果。当前版本保留旧 `emailService` 服务入口，同时通过 `notification.email.send` 暴露为 v4 插件运行时的 `email` 通知通道。
+
+## 功能
+
+- 配置 SMTP 服务器、端口、发件邮箱和默认收件邮箱
+- 发送测试邮件
+- 接收其他插件的邮件通知调用
+- 记录发送状态、收件人、来源和错误信息
+
+## 构建
 
 ```shell
 export JAVA_HOME=${HOME}/dev/graalvm-jdk-latest
