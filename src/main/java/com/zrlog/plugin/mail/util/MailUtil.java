@@ -87,7 +87,7 @@ public class MailUtil {
         }
         String displayName = stringValue(smtpMap.get("displayName"));
         if (Objects.isNull(displayName) || displayName.isEmpty()) {
-            displayName = "ZrLog 系统邮件";
+            displayName = "系统邮件";
         }
         String from = required(smtpMap, "from", "发件人");
         String port = required(smtpMap, "port", "端口");
