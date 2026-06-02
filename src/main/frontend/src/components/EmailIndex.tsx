@@ -98,6 +98,8 @@ const EmailIndex: FunctionComponent<EmailIndexProps> = ({data}) => {
     const [messageApi, contextHolder] = message.useMessage();
     const {token} = theme.useToken();
     const screens = Grid.useBreakpoint();
+    const isPhone = Boolean(screens.xs && !screens.sm);
+    const isCompact = !screens.lg;
 
     const loadLogs = async (page = logs.page, pageSize = logs.pageSize, nextFilters = filters) => {
         setLoading(true);
@@ -226,28 +228,28 @@ const EmailIndex: FunctionComponent<EmailIndexProps> = ({data}) => {
         <div style={{
             width: "100%",
             maxWidth: 1180,
-            padding: screens.xs ? 16 : 24,
+            padding: isPhone ? 12 : isCompact ? 16 : 24,
             boxSizing: "border-box",
             margin: "0 auto",
         }}>
             {contextHolder}
             <Flex
                 justify="space-between"
-                align={screens.xs ? "stretch" : "flex-start"}
-                vertical={screens.xs}
+                align={isCompact ? "stretch" : "flex-start"}
+                vertical={isCompact}
                 gap={16}
                 style={{ marginBottom: 20 }}
             >
                 <div>
-                    <Typography.Title level={3} style={{ margin: 0 }}>邮件服务</Typography.Title>
+                    <Typography.Title level={3} style={{ margin: 0, fontSize: isPhone ? 20 : undefined }}>邮件服务</Typography.Title>
                     <Typography.Text type="secondary" style={{ marginTop: 4, display: "block" }}>
                         SMTP 配置和最近 {config.retentionDays || 30} 天发送记录
                     </Typography.Text>
                 </div>
-                <Space wrap>
-                    <Button icon={<ReloadOutlined/>} onClick={refreshPage} loading={loading}>刷新</Button>
-                    <Button icon={<SendOutlined/>} onClick={sendTest} loading={loading}>测试发送</Button>
-                    <Button icon={<SettingOutlined/>} onClick={openSetting}>设置</Button>
+                <Space wrap style={{width: isPhone ? "100%" : undefined}}>
+                    <Button icon={<ReloadOutlined/>} onClick={refreshPage} loading={loading} style={isPhone ? {flex: 1} : undefined}>刷新</Button>
+                    <Button icon={<SendOutlined/>} onClick={sendTest} loading={loading} style={isPhone ? {flex: 1} : undefined}>测试发送</Button>
+                    <Button icon={<SettingOutlined/>} onClick={openSetting} style={isPhone ? {flex: 1} : undefined}>设置</Button>
                 </Space>
             </Flex>
 
@@ -300,12 +302,12 @@ const EmailIndex: FunctionComponent<EmailIndexProps> = ({data}) => {
             <Card>
                 <Flex
                     justify="space-between"
-                    align={screens.xs ? "stretch" : "center"}
-                    vertical={screens.xs}
+                    align={isCompact ? "stretch" : "center"}
+                    vertical={isCompact}
                     gap={12}
                     style={{ marginBottom: 12 }}
                 >
-                    <Space wrap>
+                    <Space wrap style={{width: isPhone ? "100%" : undefined}}>
                         <Input.Search
                             allowClear
                             placeholder="搜索主题、收件人、错误"
@@ -314,7 +316,7 @@ const EmailIndex: FunctionComponent<EmailIndexProps> = ({data}) => {
                                 setFilters(next);
                                 loadLogs(1, logs.pageSize, next);
                             }}
-                            style={{width: 260}}
+                            style={{width: isPhone ? "100%" : 260}}
                         />
                         <Select
                             value={filters.status || ""}
@@ -324,14 +326,14 @@ const EmailIndex: FunctionComponent<EmailIndexProps> = ({data}) => {
                                 setFilters(next);
                                 loadLogs(1, logs.pageSize, next);
                             }}
-                            style={{width: 120}}
+                            style={{width: isPhone ? "100%" : 120}}
                         />
                     </Space>
                     <Typography.Text type="secondary">共 {logs.total} 条</Typography.Text>
                 </Flex>
                 <Table
                     rowKey="id"
-                    size="middle"
+                    size={isPhone ? "small" : "middle"}
                     loading={loading}
                     columns={columns}
                     dataSource={logs.rows}
@@ -350,7 +352,7 @@ const EmailIndex: FunctionComponent<EmailIndexProps> = ({data}) => {
             <Drawer
                 title="邮件设置"
                 open={settingOpen}
-                width={460}
+                width={isPhone ? "100%" : 460}
                 onClose={() => setSettingOpen(false)}
                 extra={<Button type="primary" onClick={saveSetting}>保存</Button>}
             >
@@ -365,7 +367,7 @@ const EmailIndex: FunctionComponent<EmailIndexProps> = ({data}) => {
                         <Input.Password/>
                     </Form.Item>
                     <Form.Item label="端口" name="port" rules={[{required: true, message: "请输入端口"}]}>
-                        <InputNumber min={1} max={65535} style={{width: 140}}/>
+                        <InputNumber min={1} max={65535} style={{width: isPhone ? "100%" : 140}}/>
                     </Form.Item>
                     <Form.Item label="默认收件邮箱" name="to" rules={[{required: true, message: "请输入默认收件邮箱"}]}>
                         <Input placeholder="receiver@example.com"/>
@@ -379,7 +381,7 @@ const EmailIndex: FunctionComponent<EmailIndexProps> = ({data}) => {
             <Drawer
                 title="发送详情"
                 open={detail !== null}
-                width={560}
+                width={isPhone ? "100%" : 560}
                 onClose={() => setDetail(null)}
             >
                 {detail && (
