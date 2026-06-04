@@ -1,6 +1,7 @@
 package com.zrlog.plugin.mail;
 
 import com.zrlog.plugin.RunConstants;
+import com.zrlog.plugin.common.LoggerUtil;
 import com.zrlog.plugin.type.RunType;
 import com.zrlog.plugin.common.PluginNativeImageUtils;
 import com.zrlog.plugin.mail.controller.MailController;
@@ -15,9 +16,12 @@ import jakarta.activation.MailcapCommandMap;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class GraalvmAgentApplication {
 
+    private static final Logger LOGGER = LoggerUtil.getLogger(GraalvmAgentApplication.class);
 
     public static void main(String[] args) throws IOException {
         RunConstants.runType = RunType.AGENT;
@@ -40,7 +44,7 @@ public class GraalvmAgentApplication {
             setupMail();
             MailUtil.sendMail("test@test.com", "test-native-agent", "no content <br/>", smtpMap, new ArrayList<>());
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.log(Level.WARNING, "Warm up mail send failed", e);
         }
         Application.main(args);
 
@@ -48,10 +52,10 @@ public class GraalvmAgentApplication {
 
     private static void exposePluginReflectivePaths() {
         try {
-            EmailPluginAction.class.newInstance();
-            EmailService.class.newInstance();
+            EmailPluginAction.class.getDeclaredConstructor().newInstance();
+            EmailService.class.getDeclaredConstructor().newInstance();
         } catch (ReflectiveOperationException e) {
-            e.printStackTrace();
+            LOGGER.log(Level.WARNING, "Expose mail reflective paths failed", e);
         }
     }
 
@@ -74,7 +78,7 @@ public class GraalvmAgentApplication {
             Class.forName("com.sun.mail.handlers.text_xml");
             Class.forName("jakarta.activation.MailcapCommandMap");
         } catch (ClassNotFoundException e) {
-            e.printStackTrace();
+            LOGGER.log(Level.WARNING, "Load mail native image class failed", e);
         }
     }
 }
