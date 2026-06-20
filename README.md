@@ -1,6 +1,6 @@
 # zrlog-plugin-email
 
-ZrLog 邮件服务插件。通过 SMTP 发送系统通知邮件，并记录最近的发送结果。当前版本保留旧 `emailService` 服务入口，同时通过 `notification.email.send` 暴露为 v4 插件运行时的 `email` 通知通道。
+ZrLog 邮件服务插件。通过 SMTP 发送系统通知邮件，并记录最近的发送结果。当前版本兼容旧 `emailService` 调用，同时作为 `email` 通知通道接收系统通知。
 
 ## 功能
 
