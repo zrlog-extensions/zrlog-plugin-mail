@@ -222,7 +222,7 @@ const EmailIndex: FunctionComponent<EmailIndexProps> = ({data}) => {
         },
     ], []);
 
-    const emptyDescription = "暂无发送记录。发送测试邮件或被其他插件调用邮件服务后会显示记录。";
+    const emptyDescription = "暂无发送记录，发送测试邮件或被其他插件调用邮件服务后会显示记录";
 
     return (
         <div style={{
