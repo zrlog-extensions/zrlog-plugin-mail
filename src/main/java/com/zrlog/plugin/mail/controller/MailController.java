@@ -2,14 +2,17 @@ package com.zrlog.plugin.mail.controller;
 
 import com.google.gson.Gson;
 import com.zrlog.plugin.IOSession;
-import com.zrlog.plugin.common.IdUtil;
 import com.zrlog.plugin.common.LoggerUtil;
 import com.zrlog.plugin.common.model.PublicInfo;
 import com.zrlog.plugin.data.codec.ContentType;
 import com.zrlog.plugin.data.codec.HttpRequestInfo;
 import com.zrlog.plugin.data.codec.MsgPacket;
 import com.zrlog.plugin.data.codec.MsgPacketStatus;
+import com.zrlog.plugin.mail.model.EmailApiResponse;
 import com.zrlog.plugin.mail.model.EmailConfig;
+import com.zrlog.plugin.mail.model.EmailPageData;
+import com.zrlog.plugin.mail.model.EmailRequestParams;
+import com.zrlog.plugin.mail.model.EmailSendResponse;
 import com.zrlog.plugin.mail.service.EmailRepository;
 import com.zrlog.plugin.mail.util.MailUtil;
 import com.zrlog.plugin.type.ActionType;
@@ -44,7 +47,7 @@ public class MailController {
 
     public void update() {
         EmailConfig config = repository.saveConfig(params());
-        response(successMap(config));
+        response(EmailApiResponse.success(config));
     }
 
     public void index() {
@@ -60,22 +63,12 @@ public class MailController {
 
     public void list() {
         EmailConfig config = repository.readConfig();
-        response(successMap(repository.page(params(), config.getRetentionDays())));
-        Map<String, Object> keyMap = new HashMap<>();
-        keyMap.put("key", "to,from,smtpServer,password,port");
-        session.sendJsonMsg(keyMap, ActionType.GET_WEBSITE.name(), IdUtil.getInt(), MsgPacketStatus.SEND_REQUEST, msgPacket -> {
-            Map map = new Gson().fromJson(msgPacket.getDataStr(), Map.class);
-            Map<String, Object> data = new HashMap<>();
-            data.put("theme", requestInfo.isDarkMode() ? "dark" : "light");
-            data.put("data", new Gson().toJson(map));
-            session.responseHtml("/templates/index", data, requestPacket.getMethodStr(), requestPacket.getMsgId());
-        });
+        response(EmailApiResponse.success(repository.page(params(), config.getRetentionDays())));
     }
 
     public void testEmailService() {
         EmailConfig config = repository.readConfig();
         Map<String, Object> smtpMap = configMap(config);
-        Map<String, Object> response = new HashMap<>();
         List<String> recipients = new ArrayList<>();
         recipients.add(config.getTo());
         String subject = "这是一封测试邮件";
@@ -84,43 +77,43 @@ public class MailController {
             smtpMap.put("displayName", responseSync.getTitle());
             MailUtil.sendMail(config.getTo(), subject, "<div>当你看到这封邮件的时候，说明邮件服务已经可以正常工作了</div>\n", smtpMap, new ArrayList<>());
             repository.record(recipients, subject, "测试发送", true, 200, "", 0);
-            response.put("status", 200);
+            response(EmailApiResponse.success(new EmailSendResponse(200)));
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "send email error ", e);
             repository.record(recipients, subject, "测试发送", false, 500, e.getMessage(), 0);
-            response.put("status", 500);
+            response(EmailApiResponse.success(new EmailSendResponse(500)));
         }
-        response(successMap(response));
     }
 
-    private Map<String, Object> pageData() {
+    private EmailApiResponse<EmailPageData> pageData() {
         EmailConfig config = repository.readConfig();
         Map<String, Object> overview = repository.overview(config.getRetentionDays());
-        Map<String, Object> firstPageParams = new HashMap<>();
-        firstPageParams.put("page", "1");
-        firstPageParams.put("pageSize", "10");
-        Map<String, Object> data = new HashMap<>();
-        data.put("dark", requestInfo.isDarkMode());
-        data.put("colorPrimary", requestInfo.getAdminColorPrimary());
-        data.put("plugin", session.getPlugin());
-        data.put("config", config);
-        data.put("summary", overview.get("summary"));
-        data.put("trend", overview.get("trend"));
-        data.put("logs", repository.page(firstPageParams, config.getRetentionDays()));
-        return successMap(data);
+        EmailRequestParams firstPageParams = new EmailRequestParams();
+        firstPageParams.setPage("1");
+        firstPageParams.setPageSize("10");
+        EmailPageData data = new EmailPageData();
+        data.setDark(requestInfo.isDarkMode());
+        data.setColorPrimary(requestInfo.getAdminColorPrimary());
+        data.setPlugin(session.getPlugin());
+        data.setConfig(config);
+        data.setSummary(overview.get("summary"));
+        data.setTrend(overview.get("trend"));
+        data.setLogs(repository.page(firstPageParams, config.getRetentionDays()));
+        return EmailApiResponse.success(data);
     }
 
-    private Map<String, Object> params() {
+    private EmailRequestParams params() {
         if (requestInfo.getRequestBody() != null && requestInfo.getRequestBody().length > 0) {
             String body = new String(requestInfo.getRequestBody(), StandardCharsets.UTF_8);
             if (body.trim().startsWith("{")) {
-                return gson.fromJson(body, Map.class);
+                EmailRequestParams params = gson.fromJson(body, EmailRequestParams.class);
+                return params == null ? new EmailRequestParams() : params;
             }
         }
-        if (requestInfo.getParam() == null) {
-            return new HashMap<>();
-        }
-        return requestInfo.simpleParam();
+        return EmailRequestParams.fromParam(paramValue("to"), paramValue("from"), paramValue("smtpServer"),
+                paramValue("password"), paramValue("port"), paramValue("emailLogRetentionDays"),
+                paramValue("retentionDays"), paramValue("page"), paramValue("pageSize"), paramValue("keyword"),
+                paramValue("status"));
     }
 
     private Map<String, Object> configMap(EmailConfig config) {
@@ -133,22 +126,19 @@ public class MailController {
         return map;
     }
 
-    private void response(Map<String, Object> map) {
-        session.sendMsg(ContentType.JSON, map, requestPacket.getMethodStr(), requestPacket.getMsgId(), MsgPacketStatus.RESPONSE_SUCCESS);
+    private String paramValue(String key) {
+        if (requestInfo.getParam() == null || requestInfo.getParam().get(key) == null || requestInfo.getParam().get(key).length == 0) {
+            return "";
+        }
+        return requestInfo.getParam().get(key)[0];
     }
 
-    private Map<String, Object> successMap(Object data) {
-        Map<String, Object> map = new HashMap<>();
-        map.put("success", true);
-        map.put("data", data);
-        return map;
+    private void response(Object data) {
+        session.sendMsg(ContentType.JSON, data, requestPacket.getMethodStr(), requestPacket.getMsgId(), MsgPacketStatus.RESPONSE_SUCCESS);
     }
 
     private boolean isDarkMode() {
         return requestInfo.isDarkMode();
     }
 
-    private boolean notBlank(String value) {
-        return value != null && !value.trim().isEmpty();
-    }
 }

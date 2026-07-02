@@ -5,9 +5,15 @@ import com.zrlog.plugin.common.LoggerUtil;
 import com.zrlog.plugin.type.RunType;
 import com.zrlog.plugin.common.PluginNativeImageUtils;
 import com.zrlog.plugin.mail.controller.MailController;
+import com.zrlog.plugin.mail.model.EmailApiResponse;
 import com.zrlog.plugin.mail.model.EmailConfig;
 import com.zrlog.plugin.mail.model.EmailLogEntry;
 import com.zrlog.plugin.mail.model.EmailLogStore;
+import com.zrlog.plugin.mail.model.EmailPageData;
+import com.zrlog.plugin.mail.model.EmailRequestParams;
+import com.zrlog.plugin.mail.model.EmailSendRequest;
+import com.zrlog.plugin.mail.model.EmailSendResponse;
+import com.zrlog.plugin.mail.model.WebsiteKeyRequest;
 import com.zrlog.plugin.mail.service.EmailService;
 import com.zrlog.plugin.mail.util.MailUtil;
 import jakarta.activation.CommandMap;
@@ -25,7 +31,9 @@ public class GraalvmAgentApplication {
 
     public static void main(String[] args) throws IOException {
         RunConstants.runType = RunType.AGENT;
-        PluginNativeImageUtils.gsonNativeAgentByClazz(Arrays.asList(EmailConfig.class, EmailLogEntry.class, EmailLogStore.class));
+        PluginNativeImageUtils.gsonNativeAgentByClazz(Arrays.asList(EmailConfig.class, EmailLogEntry.class, EmailLogStore.class,
+                EmailApiResponse.class, EmailPageData.class, EmailRequestParams.class, EmailSendRequest.class,
+                EmailSendResponse.class, WebsiteKeyRequest.class));
         String basePath = System.getProperty("user.dir").replace("\\target", "").replace("/target", "");
         //PathKit.setRootPath(basePath);
         File file = new File(basePath + "/src/main/resources");

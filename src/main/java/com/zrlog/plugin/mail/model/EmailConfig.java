@@ -1,5 +1,7 @@
 package com.zrlog.plugin.mail.model;
 
+import com.google.gson.annotations.SerializedName;
+
 public class EmailConfig {
 
     private String to = "";
@@ -7,6 +9,7 @@ public class EmailConfig {
     private String smtpServer = "";
     private String password = "";
     private String port = "";
+    @SerializedName("emailLogRetentionDays")
     private int retentionDays = 30;
 
     public String getTo() {

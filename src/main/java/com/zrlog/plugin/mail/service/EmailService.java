@@ -12,6 +12,10 @@ import com.zrlog.plugin.common.model.PublicInfo;
 import com.zrlog.plugin.data.codec.ContentType;
 import com.zrlog.plugin.data.codec.MsgPacket;
 import com.zrlog.plugin.data.codec.MsgPacketStatus;
+import com.zrlog.plugin.mail.model.EmailConfig;
+import com.zrlog.plugin.mail.model.EmailSendRequest;
+import com.zrlog.plugin.mail.model.EmailSendResponse;
+import com.zrlog.plugin.mail.model.WebsiteKeyRequest;
 import com.zrlog.plugin.mail.util.MailUtil;
 import com.zrlog.plugin.message.CapabilityInvokeResult;
 import com.zrlog.plugin.type.ActionType;
@@ -42,34 +46,34 @@ public class EmailService implements IPluginService {
     @Override
     public void handle(final IOSession ioSession, final MsgPacket requestPacket) {
         final EmailRepository REPOSITORY = new EmailRepository(ioSession);
-        final Map<String, Object> keyMap = new HashMap<>();
-        keyMap.put("key", "to,from,smtpServer,password,port");
-        ioSession.sendJsonMsg(keyMap, ActionType.GET_WEBSITE.name(), IdUtil.getInt(), MsgPacketStatus.SEND_REQUEST, new IMsgPacketCallBack() {
+        ioSession.sendJsonMsg(WebsiteKeyRequest.of("to,from,smtpServer,password,port"), ActionType.GET_WEBSITE.name(), IdUtil.getInt(),
+                MsgPacketStatus.SEND_REQUEST, new IMsgPacketCallBack() {
             @Override
             public void handler(MsgPacket responseMsgPacket) {
-                Map<String, Object> map = new Gson().fromJson(responseMsgPacket.getDataStr(), Map.class);
-                if (map == null) {
-                    map = new HashMap<>();
+                Gson gson = new Gson();
+                EmailConfig config = gson.fromJson(responseMsgPacket.getDataStr(), EmailConfig.class);
+                if (config == null) {
+                    config = new EmailConfig();
                 }
-                Map<String, Object> rawRequestMap = new Gson().fromJson(requestPacket.getDataStr(), Map.class);
-                Map<String, Object> requestMap = payloadMap(requestPacket, rawRequestMap);
-                Map<String, Object> response = new HashMap<>();
-                SendContext sendContext = parseContext(map, requestMap);
+                EmailSendRequest rawRequest = gson.fromJson(requestPacket.getDataStr(), EmailSendRequest.class);
+                EmailSendRequest request = payload(requestPacket, rawRequest);
+                EmailSendResponse response = new EmailSendResponse();
+                SendContext sendContext = parseContext(config, request);
                 int status;
                 String error = "";
                 try {
-                    if (requestMap.get("title") == null || requestMap.get("content") == null) {
+                    if (!request.hasRequiredContent()) {
                         status = 401;
                         error = "missing title or content";
                         REPOSITORY.record(sendContext.to, sendContext.title, sendContext.source, false, status, error, sendContext.attachmentCount);
                     } else {
-                        error = validateConfig(map, sendContext);
+                        error = validateConfig(config, sendContext);
                         if (!error.isEmpty()) {
                             status = 400;
                             REPOSITORY.record(sendContext.to, sendContext.title, sendContext.source, false, status, error, sendContext.attachmentCount);
                         } else {
                             status = 200;
-                            sendEmail(map, requestMap, sendContext);
+                            sendEmail(config, request, sendContext);
                             REPOSITORY.record(sendContext.to, sendContext.title, sendContext.source, true, status, "", sendContext.attachmentCount);
                         }
                     }
@@ -79,27 +83,25 @@ public class EmailService implements IPluginService {
                     error = e.getMessage();
                     REPOSITORY.record(sendContext.to, sendContext.title, sendContext.source, false, status, error, sendContext.attachmentCount);
                 }
-                response.put("status", status);
+                response.setStatus(status);
                 sendResponse(ioSession, requestPacket, response, status, error);
             }
 
-            private SendContext parseContext(Map<String, Object> map, Map<String, Object> requestMap) {
+            private SendContext parseContext(EmailConfig config, EmailSendRequest request) {
                 SendContext context = new SendContext();
-                if (requestMap.get("to") == null) {
-                    addRecipient(context, map.get("to"));
-                } else if (requestMap.get("to") instanceof List) {
-                    for (Object item : (List) requestMap.get("to")) {
+                if (request.getTo() == null) {
+                    addRecipient(context, config.getTo());
+                } else if (request.getTo() instanceof List) {
+                    for (Object item : (List) request.getTo()) {
                         addRecipient(context, item);
                     }
                 } else {
-                    addRecipient(context, requestMap.get("to"));
+                    addRecipient(context, request.getTo());
                 }
-                context.title = firstString(requestMap.get("title"));
-                context.content = firstString(requestMap.get("content"));
-                if (requestMap.get("files") instanceof List) {
-                    context.attachmentCount = ((List) requestMap.get("files")).size();
-                }
-                context.source = source(requestMap);
+                context.title = firstString(request.getTitle());
+                context.content = firstString(request.getContent());
+                context.attachmentCount = request.attachmentCount();
+                context.source = source(request);
                 return context;
             }
 
@@ -110,37 +112,37 @@ public class EmailService implements IPluginService {
                 }
             }
 
-            private String validateConfig(Map<String, Object> map, SendContext context) {
+            private String validateConfig(EmailConfig config, SendContext context) {
                 List<String> missing = new ArrayList<>();
                 if (context.to.isEmpty()) {
                     missing.add("收件人");
                 }
-                addMissing(missing, map, "from", "发件人");
-                addMissing(missing, map, "smtpServer", "SMTP 服务器");
-                addMissing(missing, map, "password", "密码");
-                addMissing(missing, map, "port", "端口");
+                addMissing(missing, config.getFrom(), "发件人");
+                addMissing(missing, config.getSmtpServer(), "SMTP 服务器");
+                addMissing(missing, config.getPassword(), "密码");
+                addMissing(missing, config.getPort(), "端口");
                 if (missing.isEmpty()) {
                     return "";
                 }
                 return "邮件插件未配置：" + String.join("、", missing);
             }
 
-            private void addMissing(List<String> missing, Map<String, Object> map, String key, String label) {
-                if (firstString(map.get(key)).trim().isEmpty()) {
+            private void addMissing(List<String> missing, String value, String label) {
+                if (firstString(value).trim().isEmpty()) {
                     missing.add(label);
                 }
             }
 
-            private void sendEmail(Map<String, Object> map, Map<String, Object> requestMap, SendContext context) throws Exception {
+            private void sendEmail(EmailConfig config, EmailSendRequest request, SendContext context) throws Exception {
                 List<File> files = new ArrayList<>();
-                if (requestMap.get("files") != null && requestMap.get("files") instanceof List) {
-                    List<String> fileStrList = (List<String>) requestMap.get("files");
-                    for (String str : fileStrList) {
+                if (request.getFiles() != null) {
+                    for (String str : request.getFiles()) {
                         files.add(new File(str));
                     }
                 }
 
                 PublicInfo responseSync = ioSession.getResponseSync(ContentType.JSON, new HashMap<>(), ActionType.LOAD_PUBLIC_INFO, PublicInfo.class);
+                Map<String, Object> map = configMap(config);
                 map.put("displayName", responseSync.getTitle());
                 MailUtil.sendMail(context.to, context.title, context.content, map, files);
             }
@@ -155,34 +157,35 @@ public class EmailService implements IPluginService {
                 return value == null ? "" : String.valueOf(value);
             }
 
-            private String source(Map<String, Object> requestMap) {
-                String sourcePluginName = firstString(requestMap.get("sourcePluginName"));
-                String notificationType = firstString(requestMap.get("notificationType"));
+            private String source(EmailSendRequest request) {
+                String sourcePluginName = firstString(request.getSourcePluginName());
+                String notificationType = firstString(request.getNotificationType());
                 if (!sourcePluginName.isEmpty() || !notificationType.isEmpty()) {
                     return "通知:" + (sourcePluginName.isEmpty() ? notificationType : sourcePluginName);
                 }
                 return "服务调用";
             }
 
-            private Map<String, Object> payloadMap(MsgPacket requestPacket, Map<String, Object> rawRequestMap) {
-                if (ActionType.CAPABILITY_INVOKE.name().equals(requestPacket.getMethodStr())
-                        && rawRequestMap != null && rawRequestMap.get("payload") instanceof Map) {
-                    return (Map<String, Object>) rawRequestMap.get("payload");
+            private EmailSendRequest payload(MsgPacket requestPacket, EmailSendRequest rawRequest) {
+                if (rawRequest == null) {
+                    return new EmailSendRequest();
                 }
-                return rawRequestMap == null ? new HashMap<String, Object>() : rawRequestMap;
+                return rawRequest.effectivePayload(ActionType.CAPABILITY_INVOKE.name().equals(requestPacket.getMethodStr()));
             }
         });
     }
 
     private void sendResponse(IOSession ioSession,
                               MsgPacket requestPacket,
-                              Map<String, Object> response,
+                              EmailSendResponse response,
                               int status,
                               String error) {
         if (ActionType.CAPABILITY_INVOKE.name().equals(requestPacket.getMethodStr())) {
             CapabilityInvokeResult result = new CapabilityInvokeResult();
             result.setSuccess(status == 200);
-            result.setData(response);
+            Map<String, Object> data = new HashMap<>();
+            data.put("status", response.getStatus());
+            result.setData(data);
             if (!result.isSuccess()) {
                 result.setErrorMessage(error == null || error.trim().isEmpty() ? "send email failed" : error);
             }
@@ -191,6 +194,16 @@ public class EmailService implements IPluginService {
             return;
         }
         ioSession.sendMsg(ContentType.JSON, response, requestPacket.getMethodStr(), requestPacket.getMsgId(), MsgPacketStatus.RESPONSE_SUCCESS);
+    }
+
+    private static Map<String, Object> configMap(EmailConfig config) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("to", config.getTo());
+        map.put("from", config.getFrom());
+        map.put("smtpServer", config.getSmtpServer());
+        map.put("password", config.getPassword());
+        map.put("port", config.getPort());
+        return map;
     }
 
     private static class SendContext {

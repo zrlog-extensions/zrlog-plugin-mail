@@ -4,9 +4,13 @@ import com.google.gson.Gson;
 import com.zrlog.plugin.IOSession;
 import com.zrlog.plugin.common.LoggerUtil;
 import com.zrlog.plugin.common.SessionKvRepository;
+import com.zrlog.plugin.data.codec.ContentType;
 import com.zrlog.plugin.mail.model.EmailConfig;
 import com.zrlog.plugin.mail.model.EmailLogEntry;
 import com.zrlog.plugin.mail.model.EmailLogStore;
+import com.zrlog.plugin.mail.model.EmailRequestParams;
+import com.zrlog.plugin.mail.model.WebsiteKeyRequest;
+import com.zrlog.plugin.type.ActionType;
 
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
@@ -35,27 +39,25 @@ public class EmailRepository {
     }
 
     public synchronized EmailConfig readConfig() {
-        Map<String, Object> responseMap = SessionKvRepository.of(ioSession).read(CONFIG_KEYS);
-        EmailConfig config = new EmailConfig();
-        config.setTo(stringValue(responseMap.get("to")));
-        config.setFrom(stringValue(responseMap.get("from")));
-        config.setSmtpServer(stringValue(responseMap.get("smtpServer")));
-        config.setPassword(stringValue(responseMap.get("password")));
-        config.setPort(stringValue(responseMap.get("port")));
-        config.setRetentionDays(normalizeRetentionDays(stringValue(responseMap.get(RETENTION_DAYS_KEY))));
+        EmailConfig config = ioSession.getResponseSync(ContentType.JSON, WebsiteKeyRequest.of(CONFIG_KEYS), ActionType.GET_WEBSITE,
+                EmailConfig.class);
+        if (config == null) {
+            config = new EmailConfig();
+        }
+        config.setRetentionDays(normalizeRetentionDays(String.valueOf(config.getRetentionDays())));
         return config;
     }
 
-    public synchronized EmailConfig saveConfig(Map<String, Object> params) {
+    public synchronized EmailConfig saveConfig(EmailRequestParams params) {
         EmailConfig config = new EmailConfig();
-        config.setTo(limit(stringValue(params.get("to")), 240));
-        config.setFrom(limit(stringValue(params.get("from")), 240));
-        config.setSmtpServer(limit(stringValue(params.get("smtpServer")), 180));
-        config.setPassword(limit(stringValue(params.get("password")), 240));
-        config.setPort(limit(stringValue(params.get("port")), 12));
-        String retentionDays = stringValue(params.get(RETENTION_DAYS_KEY));
+        config.setTo(limit(params.getTo(), 240));
+        config.setFrom(limit(params.getFrom(), 240));
+        config.setSmtpServer(limit(params.getSmtpServer(), 180));
+        config.setPassword(limit(params.getPassword(), 240));
+        config.setPort(limit(params.getPort(), 12));
+        String retentionDays = stringValue(params.getEmailLogRetentionDays());
         if (!notBlank(retentionDays)) {
-            retentionDays = stringValue(params.get("retentionDays"));
+            retentionDays = stringValue(params.getRetentionDays());
         }
         config.setRetentionDays(normalizeRetentionDays(retentionDays));
 
@@ -119,11 +121,11 @@ public class EmailRepository {
         return data;
     }
 
-    public synchronized Map<String, Object> page(Map<String, Object> params, int retentionDays) {
-        int page = Math.max(1, parseInt(stringValue(params.get("page")), 1));
-        int pageSize = Math.max(1, Math.min(100, parseInt(stringValue(params.get("pageSize")), 10)));
-        String keyword = stringValue(params.get("keyword")).toLowerCase();
-        String status = stringValue(params.get("status"));
+    public synchronized Map<String, Object> page(EmailRequestParams params, int retentionDays) {
+        int page = Math.max(1, parseInt(stringValue(params.getPage()), 1));
+        int pageSize = Math.max(1, Math.min(100, parseInt(stringValue(params.getPageSize()), 10)));
+        String keyword = stringValue(params.getKeyword()).toLowerCase();
+        String status = stringValue(params.getStatus());
         List<EmailLogEntry> logs = listRecentLogs(retentionDays);
         Collections.sort(logs, new Comparator<EmailLogEntry>() {
             @Override
