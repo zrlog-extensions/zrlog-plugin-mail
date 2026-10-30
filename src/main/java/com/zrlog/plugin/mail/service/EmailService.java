@@ -46,8 +46,7 @@ public class EmailService implements IPluginService {
     @Override
     public void handle(final IOSession ioSession, final MsgPacket requestPacket) {
         final EmailRepository REPOSITORY = new EmailRepository(ioSession);
-        ioSession.sendJsonMsg(WebsiteKeyRequest.of("to,from,smtpServer,password,port"), ActionType.GET_WEBSITE.name(), IdUtil.getInt(),
-                MsgPacketStatus.SEND_REQUEST, new IMsgPacketCallBack() {
+        PendingDelivery delivery = new PendingDelivery(new IMsgPacketCallBack() {
             @Override
             public void handler(MsgPacket responseMsgPacket) {
                 Gson gson = new Gson();
@@ -173,6 +172,9 @@ public class EmailService implements IPluginService {
                 return rawRequest.effectivePayload(ActionType.CAPABILITY_INVOKE.name().equals(requestPacket.getMethodStr()));
             }
         });
+        ioSession.sendJsonMsg(WebsiteKeyRequest.of("to,from,smtpServer,password,port"), ActionType.GET_WEBSITE.name(), IdUtil.getInt(),
+                MsgPacketStatus.SEND_REQUEST, delivery);
+        delivery.awaitCompletion();
     }
 
     private void sendResponse(IOSession ioSession,
