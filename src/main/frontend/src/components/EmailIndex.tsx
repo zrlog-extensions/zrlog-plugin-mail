@@ -1,4 +1,6 @@
-import {ReloadOutlined, SendOutlined, SettingOutlined} from "@ant-design/icons";
+import RefreshIcon from "@zrlog/ui/icons/refresh";
+import SendIcon from "@zrlog/ui/icons/send";
+import SettingsIcon from "@zrlog/ui/icons/settings";
 import {Line} from "@ant-design/plots";
 import type {ColumnsType} from "antd/es/table";
 import {
@@ -12,19 +14,19 @@ import {
     Flex,
     Form,
     Grid,
-    Input,
-    InputNumber,
     Row,
     Select,
     Space,
     Statistic,
-    Table,
-    Tag,
     Tooltip,
-    Typography,
-    message,
     theme,
 } from "antd";
+import {useUiMessage} from "@zrlog/ui/feedback";
+import Input from "@zrlog/ui/antd/Input";
+import InputNumber from "@zrlog/ui/antd/InputNumber";
+import Table from "@zrlog/ui/antd/Table";
+import Tag from "@zrlog/ui/antd/Tag";
+import Typography from "@zrlog/ui/antd/Typography";
 import axios from "axios";
 import {FunctionComponent, useMemo, useState} from "react";
 import {EmailConfig, EmailInfoResponse, EmailLogRow, EmailMetric, PageData, StandardResponse} from "../index";
@@ -95,7 +97,7 @@ const EmailIndex: FunctionComponent<EmailIndexProps> = ({data}) => {
     const [settingOpen, setSettingOpen] = useState(false);
     const [detail, setDetail] = useState<EmailLogRow | null>(null);
     const [form] = Form.useForm<EmailConfig>();
-    const [messageApi, contextHolder] = message.useMessage();
+    const [messageApi, contextHolder] = useUiMessage();
     const {token} = theme.useToken();
     const screens = Grid.useBreakpoint();
     const isPhone = Boolean(screens.xs && !screens.sm);
@@ -247,9 +249,9 @@ const EmailIndex: FunctionComponent<EmailIndexProps> = ({data}) => {
                     </Typography.Text>
                 </div>
                 <Space wrap style={{width: isPhone ? "100%" : undefined}}>
-                    <Button icon={<ReloadOutlined/>} onClick={refreshPage} loading={loading} style={isPhone ? {flex: 1} : undefined}>刷新</Button>
-                    <Button icon={<SendOutlined/>} onClick={sendTest} loading={loading} style={isPhone ? {flex: 1} : undefined}>测试发送</Button>
-                    <Button icon={<SettingOutlined/>} onClick={openSetting} style={isPhone ? {flex: 1} : undefined}>设置</Button>
+                    <Button icon={<RefreshIcon/>} onClick={refreshPage} loading={loading} style={isPhone ? {flex: 1} : undefined}>刷新</Button>
+                    <Button icon={<SendIcon/>} onClick={sendTest} loading={loading} style={isPhone ? {flex: 1} : undefined}>测试发送</Button>
+                    <Button icon={<SettingsIcon/>} onClick={openSetting} style={isPhone ? {flex: 1} : undefined}>设置</Button>
                 </Space>
             </Flex>
 

@@ -1,16 +1,26 @@
 package com.zrlog.plugin.mail.model;
 
+import com.zrlog.plugin.data.codec.PluginAppearance;
 import com.zrlog.plugin.message.Plugin;
 
 public class EmailPageData {
 
     private boolean dark;
+    private PluginAppearance appearance;
     private String colorPrimary;
     private Plugin plugin;
     private EmailConfig config;
     private Object summary;
     private Object trend;
     private Object logs;
+
+    public PluginAppearance getAppearance() {
+        return appearance;
+    }
+
+    public void setAppearance(PluginAppearance appearance) {
+        this.appearance = appearance;
+    }
 
     public boolean isDark() {
         return dark;

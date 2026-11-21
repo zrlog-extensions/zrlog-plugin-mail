@@ -1,6 +1,7 @@
 package com.zrlog.plugin.mail.controller;
 
 import com.google.gson.Gson;
+import com.zrlog.plugin.data.codec.PluginAppearance;
 import com.zrlog.plugin.IOSession;
 import com.zrlog.plugin.common.LoggerUtil;
 import com.zrlog.plugin.common.model.PublicInfo;
@@ -93,6 +94,7 @@ public class MailController {
         firstPageParams.setPageSize("10");
         EmailPageData data = new EmailPageData();
         data.setDark(requestInfo.isDarkMode());
+        data.setAppearance(PluginAppearance.from(requestInfo));
         data.setColorPrimary(requestInfo.getAdminColorPrimary());
         data.setPlugin(session.getPlugin());
         data.setConfig(config);
